@@ -62,12 +62,12 @@ if ($con)
 	}
 	else
 	{
-		$connectionOkay = false;
+		$tablesOkay = false;
 	}
 }
 else
 {
-	$tablesOkay = false;
+	$connectionOkay = false;
 }
 
 $htaccessExists = (file_exists('.htaccess') && file_exists('.htpasswd'));
