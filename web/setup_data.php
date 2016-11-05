@@ -68,6 +68,9 @@
 	// From: http://stackoverflow.com/questions/24783862/list-all-the-files-and-folders-in-a-directory-with-php-recursive-function
 	function getDirContents($dir, $filter, &$results = array()){
 		$files = scandir($dir);
+		
+		if ($files == FALSE)
+			throw new Exception("Failed to scandir: $dir");
 
 		foreach($files as $key => $value){
 			//$path = realpath($dir.DIRECTORY_SEPARATOR.$value);
@@ -142,142 +145,168 @@
 	//exit(1);
 	
 	
-	
-	// Add annotation types
-	$values = [];
-	foreach (explode(',',rtrim($annotationTypesText)) as $annotationType)
+	try
 	{
-		$escapedType = mysqli_real_escape_string($con,$annotationType);
-		$values[] = "('$escapedType')";
-	}
-	$query = "INSERT INTO annotationtypes(type) VALUES " . implode(',',$values);
-	debugOut($query);
-	$result = mysqli_query($con,$query);
-	
-	$patterns = [];
-	
-	// Add patterns
-	$patternLines = explode("\n",$patternText);
-	foreach ($patternLines as $patternLine)
-	{
-		$escapedLine = mysqli_real_escape_string($con,$patternLine);
-		
-		$query = "INSERT INTO patterns(description) VALUES('$escapedLine');";
-		debugOut($query);
-		$result = mysqli_query($con,$query);
-		$patternid = mysqli_insert_id($con);
-		
-		$patternTypes = explode(",",rtrim($patternLine));
-		$patterns[$patternid] = $patternTypes;
-	}
-	
-	
-	$uniqTypes = array_unique(array_flatten($patterns));
-	
-	$filelist = getDirContents('phar://'.$archiveFilename, ".txt");
-	
-	foreach ($filelist as $txtFile)
-	{
-		$a1File = str_replace(".txt",".a1",$txtFile);
-		$jsonFile = str_replace(".txt",".json",$txtFile);
-		
-		$text = file_get_contents($txtFile);
-		$a1Data = file($a1File);
-		$jsonData = json_decode(file_get_contents($jsonFile),true);
-		
-		$pmid = $jsonData['pmid'];
-		$pmcid = $jsonData['pmcid'];
-		
-		$entitiesPerType = [];
-		foreach ($uniqTypes as $type)
-			$entitiesPerType[$type] = [];
-			
-		$filename = str_replace(".txt","",basename($txtFile));
-		$escapedFilename = mysqli_real_escape_string($con,$filename);
-		
-		// Insert sentence into database
-		$escapedText = mysqli_real_escape_string($con,$text);	
-		$query = "INSERT INTO sentences(pmid,pmcid,text,filename) VALUES('$pmid','$pmcid','$escapedText','$escapedFilename');";
-		debugOut($query);
-		$result = mysqli_query($con,$query);
-		$sentenceid = mysqli_insert_id($con);
-	
-		foreach($a1Data as $line)
+		// Add annotation types
+		$values = [];
+		foreach (explode(',',rtrim($annotationTypesText)) as $annotationType)
 		{
-			$exploded = explode("\t",rtrim($line));
-			$exploded2 = explode(" ",$exploded[1]);
+			$escapedType = mysqli_real_escape_string($con,$annotationType);
+			$values[] = "('$escapedType')";
+		}
+		$query = "INSERT INTO annotationtypes(type) VALUES " . implode(',',$values);
+		debugOut($query);
+		$result = mysqli_query($con,$query);
+		
+		if (!$result)
+			throw new Exception("Failed to insert annotation types. SQL: $query");
+		
+		$patterns = [];
+		
+		// Add patterns
+		$patternLines = explode("\n",$patternText);
+		foreach ($patternLines as $patternLine)
+		{
+			$escapedLine = mysqli_real_escape_string($con,$patternLine);
 			
-			$sourceid = $exploded[0];
-			$type = $exploded2[0];
-			$startPos = $exploded2[1];
-			$endPos = $exploded2[2];
-			$tokens = $exploded[2];
-			$escapedTokens = mysqli_real_escape_string($con,$tokens);
-			$escapedSourceID = mysqli_real_escape_string($con,$sourceid);
-			
-			$query = "INSERT INTO tags(type,startpos,endpos,text,sourceid) VALUES('$type','$startPos','$endPos','$escapedTokens','$escapedSourceID');";
+			$query = "INSERT INTO patterns(description) VALUES('$escapedLine');";
 			debugOut($query);
 			$result = mysqli_query($con,$query);
-			$tagid = mysqli_insert_id($con);
-		
-			$entitiesPerType[$type][] = array("id"=>$tagid,"tokens"=>$tokens,"sourceid"=>$sourceid);
+			if (!$result)
+				throw new Exception("Failed to insert pattern. SQL: $query");
+			$patternid = mysqli_insert_id($con);
+			
+			$patternTypes = explode(",",rtrim($patternLine));
+			$patterns[$patternid] = $patternTypes;
 		}
 		
-		$query = "SELECT MAX(tagsetid) as maxid FROM tagsets";
-		debugOut($query);
-		$result = mysqli_query($con,$query);
-		$row = mysqli_fetch_array($result);
-		$tagsetid = $row['maxid'] + 1;
 		
-		foreach ($patterns as $patternid => $pattern)
+		$uniqTypes = array_unique(array_flatten($patterns));
+		
+		$filelist = getDirContents('phar://'.$archiveFilename, ".txt");
+		
+		if (count($filelist)==0)
 		{
-			$tmp = [];
-			foreach ($pattern as $t)
-				$tmp[] = $entitiesPerType[$t];
-			//print_array($tmp);
-			#$product = array_cartesian($tmp);
-			$product = call_user_func_array('array_cartesian',$tmp);
-			foreach ($product as $p)
-			{
-				$values = [];
-				$desc = [];
-				$a2out = [];
-				foreach ($p as $i => $tagstuff)
-				{
-					$tagtype = $pattern[$i];
-					$tagid = $tagstuff['id'];
-					$sourceid = $tagstuff['sourceid'];
-					$tokens = $tagstuff['tokens'];
-					
-					$values[] = "($tagsetid,$i,$tagid)";
-					$desc[] = "$tagtype: $tokens";
-					$a2out[] = "$tagtype:$sourceid";
-				}
-				
-				$fullDesc = implode(' // ', $desc);
-				$escapedDesc = mysqli_real_escape_string($con,$fullDesc);
-				
-				$fullA2out = implode(' ', $a2out);
-				$escapedA2out = mysqli_real_escape_string($con,$fullA2out);
+			throw new Exception("Unable to find files within archive.");
+		}
+		
+		foreach ($filelist as $txtFile)
+		{
+			$a1File = str_replace(".txt",".a1",$txtFile);
+			$jsonFile = str_replace(".txt",".json",$txtFile);
 			
-				$query = "INSERT INTO tagsets(tagsetid,patternindex,tagid) VALUES" . implode(",",$values);
+			$text = file_get_contents($txtFile);
+			$a1Data = file($a1File);
+			$jsonData = json_decode(file_get_contents($jsonFile),true);
+			
+			$pmid = $jsonData['pmid'];
+			$pmcid = $jsonData['pmcid'];
+			
+			$entitiesPerType = [];
+			foreach ($uniqTypes as $type)
+				$entitiesPerType[$type] = [];
+				
+			$filename = str_replace(".txt","",basename($txtFile));
+			$escapedFilename = mysqli_real_escape_string($con,$filename);
+			
+			// Insert sentence into database
+			$escapedText = mysqli_real_escape_string($con,$text);	
+			$query = "INSERT INTO sentences(pmid,pmcid,text,filename) VALUES('$pmid','$pmcid','$escapedText','$escapedFilename');";
+			debugOut($query);
+			$result = mysqli_query($con,$query);
+			if (!$result)
+				throw new Exception("Failed to insert sentence. SQL: $query");
+			$sentenceid = mysqli_insert_id($con);
+		
+			foreach($a1Data as $line)
+			{
+				$exploded = explode("\t",rtrim($line));
+				$exploded2 = explode(" ",$exploded[1]);
+				
+				$sourceid = $exploded[0];
+				$type = $exploded2[0];
+				$startPos = $exploded2[1];
+				$endPos = $exploded2[2];
+				$tokens = $exploded[2];
+				$escapedTokens = mysqli_real_escape_string($con,$tokens);
+				$escapedSourceID = mysqli_real_escape_string($con,$sourceid);
+				
+				$query = "INSERT INTO tags(type,startpos,endpos,text,sourceid) VALUES('$type','$startPos','$endPos','$escapedTokens','$escapedSourceID');";
 				debugOut($query);
 				$result = mysqli_query($con,$query);
-				
-				$query = "INSERT INTO tagsetinfos(tagsetid,sentenceid,patternid,description,a2output) VALUES('$tagsetid','$sentenceid','$patternid','$escapedDesc','$escapedA2out')";
-				debugOut($query);
-				$result = mysqli_query($con,$query);
-				
-				$tagsetid++;
+				if (!$result)
+					throw new Exception("Failed to insert tag. SQL: $query");
+				$tagid = mysqli_insert_id($con);
+			
+				$entitiesPerType[$type][] = array("id"=>$tagid,"tokens"=>$tokens,"sourceid"=>$sourceid);
 			}
 			
-			//print_array($product);
+			$query = "SELECT MAX(tagsetid) as maxid FROM tagsets";
+			debugOut($query);
+			$result = mysqli_query($con,$query);
+			if (!$result)
+				throw new Exception("Failed to get new tagsetid. SQL: $query");
+			$row = mysqli_fetch_array($result);
+			$tagsetid = $row['maxid'] + 1;
+			
+			foreach ($patterns as $patternid => $pattern)
+			{
+				$tmp = [];
+				foreach ($pattern as $t)
+					$tmp[] = $entitiesPerType[$t];
+				//print_array($tmp);
+				#$product = array_cartesian($tmp);
+				$product = call_user_func_array('array_cartesian',$tmp);
+				foreach ($product as $p)
+				{
+					$values = [];
+					$desc = [];
+					$a2out = [];
+					foreach ($p as $i => $tagstuff)
+					{
+						$tagtype = $pattern[$i];
+						$tagid = $tagstuff['id'];
+						$sourceid = $tagstuff['sourceid'];
+						$tokens = $tagstuff['tokens'];
+						
+						$values[] = "($tagsetid,$i,$tagid)";
+						$desc[] = "$tagtype: $tokens";
+						$a2out[] = "$tagtype:$sourceid";
+					}
+					
+					$fullDesc = implode(' // ', $desc);
+					$escapedDesc = mysqli_real_escape_string($con,$fullDesc);
+					
+					$fullA2out = implode(' ', $a2out);
+					$escapedA2out = mysqli_real_escape_string($con,$fullA2out);
+				
+					$query = "INSERT INTO tagsets(tagsetid,patternindex,tagid) VALUES" . implode(",",$values);
+					debugOut($query);
+					$result = mysqli_query($con,$query);
+					if (!$result)
+						throw new Exception("Failed to insert tagset. SQL: $query");
+					
+					$query = "INSERT INTO tagsetinfos(tagsetid,sentenceid,patternid,description,a2output) VALUES('$tagsetid','$sentenceid','$patternid','$escapedDesc','$escapedA2out')";
+					debugOut($query);
+					$result = mysqli_query($con,$query);
+					if (!$result)
+						throw new Exception("Failed to insert tagsetinfo. SQL: $query");
+					
+					$tagsetid++;
+				}
+				
+				//print_array($product);
+			}
+			
+			//print_array($entitiesPerType);
+			//break;
 		}
-		
-		//print_array($entitiesPerType);
-		//break;
+		//$fd = fopen('phar:///some/file.tar.gz/some/file/in/the/archive', 'r');
+		//$contents = file_get_contents('phar:///some/file.tar.gz/some/file/in/the/archive');
+		showSuccess("Data import complete");
 	}
-	//$fd = fopen('phar:///some/file.tar.gz/some/file/in/the/archive', 'r');
-	//$contents = file_get_contents('phar:///some/file.tar.gz/some/file/in/the/archive');
-	showSuccess("Data import complete");
+	catch (Exception $e)
+	{
+		showError("ERROR: " . $e->getMessage());
+	}
 ?>
