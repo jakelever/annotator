@@ -138,7 +138,7 @@
 	
 	//print_array($_FILES);
 	//print_array($_POST);
-	$archiveFilename = $_FILES['data']['tmp_name'];
+	$tmpArchiveFilename = $_FILES['data']['tmp_name'];
 	$annotationTypesText = $_POST['tags'];
 	$patternText = $_POST['tuples'];
 	
@@ -182,6 +182,18 @@
 		
 		
 		$uniqTypes = array_unique(array_flatten($patterns));
+				
+		$archiveFilename = 'tmp.tar.gz';
+		if (file_exists($archiveFilename))
+		{
+			$unlinkResult = unlink($archiveFilename);
+			if (!$unlinkResult)
+				throw new Exception("Unable to remove archive");
+		}
+		
+		$moveResult = move_uploaded_file($tmpArchiveFilename,$archiveFilename);
+		if (!$moveResult)
+			throw new Exception("Unable to move temporary archive");
 		
 		$filelist = getDirContents('phar://'.$archiveFilename, ".txt");
 		
