@@ -225,10 +225,10 @@
 	  
 	  
       <form role="form" action="prevsentence.php" method="GET">
-      <button type="submit" class="btn btn-success">Previous Sentence</button>
+      <button type="submit" class="btn btn-success">&lt; Remove Annotations and Move to Previous Sentence</button>
       </form>
       <form role="form" action="nextsentence.php" method="GET">
-      <button type="submit" class="btn btn-success">Next Sentence</button>
+      <button type="submit" class="btn btn-success">Set None for Rest of Sentence &gt;</button>
       </form>
 
     </div> <!-- /container -->

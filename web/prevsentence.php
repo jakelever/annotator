@@ -1,15 +1,24 @@
 <?php	include 'dbopen.php';
 	
-   	$query = "SELECT MAX(t.sentenceid) FROM annotations a, tagpairs tp, tags t WHERE a.tagpairid=tp.tagpairid AND tp.tagid1=t.tagid";
+   	$query = "SELECT MAX(tsi.sentenceid) FROM annotations a, tagsetinfos tsi WHERE a.tagsetid=tsi.tagsetid";
 	$result = mysqli_query($con,$query);
+	if (!$result)
+	{
+		echo "<b>ERROR: Cannot get sentenceid to delete</b> SQL: $query";
+		exit(1);
+	}
 	$sentenceid = mysqli_fetch_row($result)[0];
 	
 	
-   	$query = "DELETE FROM annotations WHERE tagpairid IN (SELECT tp.tagpairid FROM tagpairs tp, tags t WHERE tp.tagid1=t.tagid AND t.sentenceid=$sentenceid)";
+   	$query = "DELETE FROM annotations WHERE tagsetid IN (SELECT tagsetid FROM tagsetinfos WHERE sentenceid=$sentenceid)";
 	$result = mysqli_query($con,$query);
+	if (!$result)
+	{
+		echo "<b>ERROR: Cannot delete annotations</b> SQL: $query";
+		exit(1);
+	}
 	
     mysqli_close($con);
-
 
     $path = pathinfo( $_SERVER['PHP_SELF'] );
     $page = "http://".$_SERVER['SERVER_NAME'].$path['dirname']."/annotate.php";
