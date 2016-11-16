@@ -16,6 +16,7 @@
 	$array = mysqli_fetch_array($result);
 	$annotatedsentencecount = $array['annotatedsentencecount'];
 	
+	$tagsetid = -1;
     # Find an annotation that hasn't been tagged by the current user
 	if (isset($_GET['tagsetid']) && is_numeric($_GET['tagsetid'])) 
 	{
@@ -23,77 +24,90 @@
 	}
 	else
 	{
-		$query = "SELECT MIN(tagsetid) as tagsetid FROM tagsets WHERE tagsetid NOT IN (SELECT tagsetid FROM annotations)";
+		# Check if there are annotations left to do
+		$query = "SELECT COUNT(*) as count FROM tagsets WHERE tagsetid NOT IN (SELECT tagsetid FROM annotations)";
 		$result = mysqli_query($con,$query);
 		$row = mysqli_fetch_array($result);
-        $tagsetid = $row['tagsetid'];
-	}
-	
-	$query = "SELECT s.sentenceid as sentenceid, s.text as sentencetext, t.text as tagtext, s.pmid as sentencepmid, s.pmcid as sentencepmcid, t.startpos as startpos, t.endpos as endpos, t.tagid as tagid, ts.patternindex as patternindex, p.description as patterndescription, tsi.description as tagsetdescription FROM sentences s, tagsets ts, tags t, patterns p, tagsetinfos tsi WHERE tsi.sentenceid = s.sentenceid AND ts.tagid = t.tagid AND ts.tagsetid=tsi.tagsetid AND tsi.patternid = p.patternid AND ts.tagsetid='$tagsetid' ORDER BY ts.patternindex";
-    
-    $result = mysqli_query($con,$query);
-	
-	#print "<p>$query</p>\n";
-	
-	$tagdata = [];
-	
-	$theseStartPos = [];
-	$theseEndPos = [];
-    
-	$content = '';
-	$sentenceid = -1;
-	$tagsetdescription = '';
-	while ($row = mysqli_fetch_array($result))
-	{
-		//$tagsetid = $row['tagsetid'];
-		$sentenceid = $row['sentenceid'];
-		$content = $row['sentencetext'];
-		$pmid = $row['sentencepmid'];
-		$pmcid = $row['sentencepmcid'];
-		$pubmedlink="http://www.ncbi.nlm.nih.gov/pubmed/".$pmid;
-		$patterndescription = $row['patterndescription'];
-		$patternexploded = explode(",",$patterndescription);
-		$tagsetdescription = $row['tagsetdescription'];
+        $remaining = $row['count'];
 		
-		$tagid = $row['tagid'];
-		$tagtext = $row['tagtext'];
-		$patternindex = $row['patternindex'];
-		$startpos = $row['startpos'];
-		$endpos = $row['endpos'];
-		
-		$taginfo = array('tagid'=>$tagid,'tagtext'=>$tagtext,'patternindex'=>$patternindex,'patterntype'=>$patternexploded[$patternindex],'startpos'=>$startpos,'endpos'=>$endpos);
-		$tagdata[] = $taginfo;
-		
-		$theseStartPos[] = $startpos;
-		$theseEndPos[] = $endpos;
+		# If so, get the appropriate ID for it
+		if ($remaining > 0)
+		{
+			$query = "SELECT MIN(tagsetid) as tagsetid FROM tagsets WHERE tagsetid NOT IN (SELECT tagsetid FROM annotations)";
+			$result = mysqli_query($con,$query);
+			$row = mysqli_fetch_array($result);
+			$tagsetid = $row['tagsetid'];
+		}
 	}
 	
-	
-	$contentArray = array();
-	preg_match_all('/./u', $content, $contentArray);
-	$contentArray = $contentArray[0];
-	
-	foreach($tagdata as $taginfo)
+	if ($tagsetid > -1)
 	{
-		$startpos = $taginfo['startpos'];
-		$endpos = $taginfo['endpos'];
-		$contentArray[$startpos] = '<b>'.$contentArray[$startpos];
-		$contentArray[$endpos-1] = $contentArray[$endpos-1].'</b>';
+		$query = "SELECT s.sentenceid as sentenceid, s.text as sentencetext, t.text as tagtext, s.pmid as sentencepmid, s.pmcid as sentencepmcid, t.startpos as startpos, t.endpos as endpos, t.tagid as tagid, ts.patternindex as patternindex, p.description as patterndescription, tsi.description as tagsetdescription FROM sentences s, tagsets ts, tags t, patterns p, tagsetinfos tsi WHERE tsi.sentenceid = s.sentenceid AND ts.tagid = t.tagid AND ts.tagsetid=tsi.tagsetid AND tsi.patternid = p.patternid AND ts.tagsetid='$tagsetid' ORDER BY ts.patternindex";
+		
+		$result = mysqli_query($con,$query);
+		
+		#print "<p>$query</p>\n";
+		
+		$tagdata = [];
+		
+		$theseStartPos = [];
+		$theseEndPos = [];
+		
+		$content = '';
+		$sentenceid = -1;
+		$tagsetdescription = '';
+		while ($row = mysqli_fetch_array($result))
+		{
+			//$tagsetid = $row['tagsetid'];
+			$sentenceid = $row['sentenceid'];
+			$content = $row['sentencetext'];
+			$pmid = $row['sentencepmid'];
+			$pmcid = $row['sentencepmcid'];
+			$pubmedlink="http://www.ncbi.nlm.nih.gov/pubmed/".$pmid;
+			$patterndescription = $row['patterndescription'];
+			$patternexploded = explode(",",$patterndescription);
+			$tagsetdescription = $row['tagsetdescription'];
+			
+			$tagid = $row['tagid'];
+			$tagtext = $row['tagtext'];
+			$patternindex = $row['patternindex'];
+			$startpos = $row['startpos'];
+			$endpos = $row['endpos'];
+			
+			$taginfo = array('tagid'=>$tagid,'tagtext'=>$tagtext,'patternindex'=>$patternindex,'patterntype'=>$patternexploded[$patternindex],'startpos'=>$startpos,'endpos'=>$endpos);
+			$tagdata[] = $taginfo;
+			
+			$theseStartPos[] = $startpos;
+			$theseEndPos[] = $endpos;
+		}
+		
+		
+		$contentArray = array();
+		preg_match_all('/./u', $content, $contentArray);
+		$contentArray = $contentArray[0];
+		
+		foreach($tagdata as $taginfo)
+		{
+			$startpos = $taginfo['startpos'];
+			$endpos = $taginfo['endpos'];
+			$contentArray[$startpos] = '<b>'.$contentArray[$startpos];
+			$contentArray[$endpos-1] = $contentArray[$endpos-1].'</b>';
+		}
+		
+		$query = "SELECT t.startpos, t.endpos FROM tagsets ts, tagsetinfos tsi, tags t WHERE ts.tagsetid=tsi.tagsetid AND ts.tagid=t.tagid AND tsi.sentenceid=$sentenceid";
+		$result = mysqli_query($con,$query);
+		while ($row = mysqli_fetch_array($result))
+		{
+			$startpos = $row['startpos'];
+			$endpos = $row['endpos'];
+			if (!in_array($startpos,$theseStartPos))
+				$contentArray[$startpos] = '<u>'.$contentArray[$startpos];
+			if (!in_array($endpos,$theseEndPos))
+				$contentArray[$endpos-1] = $contentArray[$endpos-1].'</u>';
+		}
+		
+		$content = implode('', $contentArray);
 	}
-	
-	$query = "SELECT t.startpos, t.endpos FROM tagsets ts, tagsetinfos tsi, tags t WHERE ts.tagsetid=tsi.tagsetid AND ts.tagid=t.tagid AND tsi.sentenceid=$sentenceid";
-	$result = mysqli_query($con,$query);
-	while ($row = mysqli_fetch_array($result))
-	{
-		$startpos = $row['startpos'];
-		$endpos = $row['endpos'];
-		if (!in_array($startpos,$theseStartPos))
-			$contentArray[$startpos] = '<u>'.$contentArray[$startpos];
-		if (!in_array($endpos,$theseEndPos))
-			$contentArray[$endpos-1] = $contentArray[$endpos-1].'</u>';
-	}
-	
-	$content = implode('', $contentArray);
 	
 	/*$contentArray = array();
 	preg_match_all('/./u', $content, $contentArray);
@@ -180,7 +194,15 @@
           <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
           <strong>Annotation added!</strong> Annotation added (#<?php echo $_GET['prevtagsetid']; ?>)
         </div>
-        <?php } ?>
+        <?php } 
+		
+		if ($remaining == 0)
+		{
+			echo "<p>There are no more sentences to annotate!</p>";
+		}
+		else
+		{
+		?>
 
         <!-- <h1>Sentence Annotation</h1> -->
         <p>Please read the following sentence and annotate with appropriate cancer/gene relationship. Already tagged <?php print $annotatedsentencecount; ?> sentences.</p>
@@ -230,6 +252,10 @@
       <form role="form" action="nextsentence.php" method="GET">
       <button type="submit" class="btn btn-success">Set None for Rest of Sentence &gt;</button>
       </form>
+	  
+	  <?php
+		}
+		?>
 
     </div> <!-- /container -->
 
