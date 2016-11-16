@@ -94,7 +94,7 @@
 			$contentArray[$endpos-1] = $contentArray[$endpos-1].'</b>';
 		}
 		
-		$query = "SELECT t.startpos, t.endpos FROM tagsets ts, tagsetinfos tsi, tags t WHERE ts.tagsetid=tsi.tagsetid AND ts.tagid=t.tagid AND tsi.sentenceid=$sentenceid";
+		$query = "SELECT startpos, endpos FROM tags WHERE tagid IN (SELECT ts.tagid FROM tagsets ts, tagsetinfos tsi WHERE ts.tagsetid=tsi.tagsetid AND tsi.sentenceid=$sentenceid)";
 		$result = mysqli_query($con,$query);
 		while ($row = mysqli_fetch_array($result))
 		{
