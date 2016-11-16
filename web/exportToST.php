@@ -57,15 +57,16 @@
 		$filename = $row['filename'];
 		$sentenceid = $row['sentenceid'];
 		
-		if (!in_array($filename,$outData))
+		if (!array_key_exists($filename,$outData))
 			$outData[$filename] = [];
 		
 		if ($annotationtype != 'None')
 		{
 			$eventID = 1;
-			if (in_array($filename,$outData))
+			if (array_key_exists($filename,$outData))
 				$eventID = count($outData[$filename])+1;
-			$line = "E$eventID\t$annotationtype $a2output\n";
+			$nospacetype = str_replace(" ","_",$annotationtype);
+			$line = "E$eventID\t$nospacetype $a2output\n";
 			//print "<p>$line</p>";
 			//file_put_contents("phar://./$basename.phar/$directory/$filename.a2", $line);
 			//$phar->addFromString("$directory/$filename.a2",$line);
@@ -76,7 +77,7 @@
 	
 	foreach ($outData as $filename => $lines)
 	{
-		$fileData = implode("\n",$lines);
+		$fileData = implode("",$lines);
 		$phar->addFromString("$directory/$filename.a2",$fileData);
 	}
 	
