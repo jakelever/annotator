@@ -25,6 +25,9 @@
 		$a2output = $row['a2output'];
 		$filename = $row['filename'];
 		
+		if (!in_array($filename,$outData))
+			$outData[$filename] = [];
+		
 		if ($annotationtype != 'None')
 		{
 			$eventID = 1;
