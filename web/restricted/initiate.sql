@@ -42,7 +42,7 @@ DROP TABLE IF EXISTS `annotationtypes`;
 CREATE TABLE IF NOT EXISTS `annotationtypes` (
 `annotationtypeid` int(11) NOT NULL,
   `type` varchar(30) NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -54,7 +54,7 @@ DROP TABLE IF EXISTS `patterns`;
 CREATE TABLE IF NOT EXISTS `patterns` (
 `patternid` int(11) NOT NULL,
   `description` text NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `sentences` (
   `pmcid` int(11) NOT NULL,
   `text` text NOT NULL,
   `filename` text NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=1202 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS `tags` (
   `endpos` int(11) NOT NULL,
   `text` text NOT NULL,
   `sourceid` text NOT NULL
-) ENGINE=InnoDB AUTO_INCREMENT=4144 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -163,22 +163,22 @@ ALTER TABLE `tagsets`
 -- AUTO_INCREMENT for table `annotationtypes`
 --
 ALTER TABLE `annotationtypes`
-MODIFY `annotationtypeid` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=37;
+MODIFY `annotationtypeid` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `patterns`
 --
 ALTER TABLE `patterns`
-MODIFY `patternid` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=27;
+MODIFY `patternid` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `sentences`
 --
 ALTER TABLE `sentences`
-MODIFY `sentenceid` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1202;
+MODIFY `sentenceid` int(11) NOT NULL AUTO_INCREMENT;
 --
 -- AUTO_INCREMENT for table `tags`
 --
 ALTER TABLE `tags`
-MODIFY `tagid` int(11) NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=4144;
+MODIFY `tagid` int(11) NOT NULL AUTO_INCREMENT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
