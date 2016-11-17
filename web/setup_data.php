@@ -250,7 +250,7 @@
 					throw new Exception("Failed to insert tag. SQL: $query");
 				$tagid = mysqli_insert_id($con);
 			
-				$entitiesPerType[$type][] = array("id"=>$tagid,"tokens"=>$tokens,"sourceid"=>$sourceid);
+				$entitiesPerType[$type][] = array("id"=>$tagid,"tokens"=>$tokens,"sourceid"=>$sourceid,"startPos"=>$startPos,"endPos"=>$endPos);
 			}
 			
 			$query = "SELECT MAX(tagsetid) as maxid FROM tagsets";
@@ -274,6 +274,10 @@
 					$values = [];
 					$desc = [];
 					$a2out = [];
+					
+					$alreadyDoneTokens = [];
+					$skipThisOne = False;
+					
 					foreach ($p as $i => $tagstuff)
 					{
 						$tagtype = $pattern[$i];
@@ -281,10 +285,25 @@
 						$sourceid = $tagstuff['sourceid'];
 						$tokens = $tagstuff['tokens'];
 						
+						# Check that this one doesn't include multiple of the same token
+						$startPos = $tagstuff['startPos'];
+						$endPos = $tagstuff['endPos'];
+						$tokenSummary="$startPos:$endPos";
+						if (in_array($tokenSummary,$alreadyDoneTokens))
+						{
+							$skipThisOne = True;
+							break
+						}
+						$alreadyDoneTokens[] = $tokenSummary;
+						
+						
 						$values[] = "($tagsetid,$i,$tagid)";
 						$desc[] = "$tagtype: $tokens";
 						$a2out[] = "$tagtype:$sourceid";
 					}
+					
+					if ($skipThisOne)
+						continue;
 					
 					$fullDesc = implode(' // ', $desc);
 					$escapedDesc = mysqli_real_escape_string($con,$fullDesc);
