@@ -292,7 +292,7 @@
 						if (in_array($tokenSummary,$alreadyDoneTokens))
 						{
 							$skipThisOne = True;
-							break
+							break;
 						}
 						$alreadyDoneTokens[] = $tokenSummary;
 						
