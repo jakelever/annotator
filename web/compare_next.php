@@ -275,6 +275,9 @@
 		$mergedFilenameGZ = $mergedFilename.'.gz';
 		print "<b>Comparison finished. No more sentences found. <a href=\"$mergedFilenameGZ\">Download Annotations</a></b>";
 		
+		if (file_exists($mergedFilenameGZ))
+			unlink($mergedFilenameGZ);
+		
 		$phar->compress(Phar::GZ); # Creates archive.tar.gz
 		
 		exit(0);
