@@ -126,6 +126,23 @@
 		return($newRelations);
 	}
 	
+	function getIDsFromRelation($relation)
+	{
+		$ids = [];
+		
+		$argTxtsWithEntities = [];
+		$explode1 = explode(" ", $relation);
+		foreach ($explode1 as $argInfo)
+		{
+			$explode2 = explode(":",$argInfo);
+			$argName = $explode2[0];
+			$argValue = $explode2[1];
+			
+			$ids[] = $argValue;
+		}
+		
+		return $ids;
+	}
 	
 	function basenameNoExtensionArray($array)
 	{
@@ -236,7 +253,7 @@
 			$finalData[] = array('relWithIDs'=>$rel, 'relWithEntities'=>$withEntities, 'annotation1'=>$annotation1, 'annotation2'=>$annotation2, 'matching'=>$matching);
 		}
 		
-		$result = array('content'=>$content, 'pmid'=>$pmid, 'finalData'=>$finalData);
+		$result = array('content'=>$content, 'pmid'=>$pmid, 'finalData'=>$finalData, 'entities'=>$entities);
 		
 		if ($hasDifferences)
 			return $result;
@@ -265,6 +282,7 @@
 			$content = $result['content'];
 			$pmid = $result['pmid'];
 			$finalData = $result['finalData'];
+			$entities = $result['entities'];
 			$sentenceToAnnotate = true;
 			break;
 		}
@@ -282,6 +300,42 @@
 		
 		exit(0);
 	}
+	
+	
+	
+	for($i=0; $i<count($finalData); $i++)
+	{		
+		$contentArray = array();
+		preg_match_all('/./u', $content, $contentArray);
+		$contentArray = $contentArray[0];
+		
+		$ids = getIDsFromRelation($finalData[$i]['relWithIDs']);
+		foreach ($ids as $id)
+		{
+			$entity = $entities[$id];
+			$startpos = $entity['start'];
+			$endpos = $entity['end'];
+			$contentArray[$startpos] = '<b>'.$contentArray[$startpos];
+			$contentArray[$endpos-1] = $contentArray[$endpos-1].'</b>';
+		}
+		
+		$finalData[$i]['highlighted'] = implode('', $contentArray);
+	}
+	
+	$contentArray = array();
+	preg_match_all('/./u', $content, $contentArray);
+	$contentArray = $contentArray[0];
+	
+	#printArray($entities);
+	foreach($entities as $entityid => $entity)
+	{
+		$startpos = $entity['start'];
+		$endpos = $entity['end'];
+		$contentArray[$startpos] = '<u>'.$contentArray[$startpos];
+		$contentArray[$endpos-1] = $contentArray[$endpos-1].'</u>';
+	}
+	
+	$content = implode('', $contentArray);
 		
 ?>
 <!DOCTYPE html>
@@ -354,7 +408,7 @@
         <p>Please compare this sentence and resolve any conflicts between the two annotation sets</p>
         <div class="panel panel-default">
           <div class="panel-body">
-            <?php echo $content; ?>
+            <div id="content"><?php echo $content; ?></div>
             <a href="<?php echo $pubmedlink; ?>">(pubmed)</a>
           </div>
         </div>
@@ -382,8 +436,10 @@
 							$annotation1 = $d['annotation1'];
 							$annotation2 = $d['annotation2'];
 							$matching = $d['matching'];
+							$highlighted = $d['highlighted'];
+							
 							print "<tr>\n";
-							print "<td><input type=\"hidden\" name=\"rel[$count]\" value=\"$relWithIDs\" />$relWithEntities</td>\n";
+							print "<td><input type=\"hidden\" name=\"rel[$count]\" value=\"$relWithIDs\" /><div onmouseover=\"changeText('$highlighted');\">$relWithEntities</div></td>\n";
 							
 							if ($matching)
 							{
@@ -431,6 +487,14 @@
     
 	
     <script src="my.js"></script>
+	
+	<script>
+		function changeText(text)
+		{
+			var obj = document.getElementById('content');
+			obj.innerHTML = text;
+		}
+	</script>
 	
     <script type="text/javascript" charset="utf-8">
       $(document).ready(function() {
