@@ -1,2 +1,4 @@
 /web/restricted/dbinfo.json
 /web/*.gz
+/web/*.tar
+/web/compareData/*.gz
