@@ -9,6 +9,8 @@
 	$tarArchive = "$basename.tar";
 	$gzArchive = "$basename.tar.gz";
 	
+	$filter = isset($_GET['filter']);
+	
 	if (!isset($_GET['start']))
 	{
 	
@@ -60,7 +62,7 @@
 		if (!array_key_exists($filename,$outData))
 			$outData[$filename] = [];
 		
-		if ($annotationtype != 'None')
+		if (!$filter || $annotationtype != 'None')
 		{
 			$eventID = 1;
 			if (array_key_exists($filename,$outData))

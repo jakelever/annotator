@@ -208,29 +208,29 @@ $htaccessExists = (file_exists('.htaccess') && file_exists('.htpasswd'));
 		</form>
 			
 		
-        <form action="exportToST.php" method="POST">
-			<h2>Exporting Annotations</h2>
-			<div class="panel panel-default">
-			  <div class="panel-body">
-				<?php
-					if (!$connectionOkay || !$tablesOkay)
-						showAlert('Fix the database connection above before exporting data!',true);
-					elseif ($annotationCount <= 0)
-						showAlert('No annotations are currently found. Time to annotate some!',true);
-					else
-						showAlert("$annotationCount annotations are found.",false);
-				?>
-				<table>
-					<tr>
-						<td>Download the annotations as a GZipped archive of A2 files (ST format):</td>
-					</tr>
-					<tr>
-						<td><button type="submit" class="btn btn-danger">Export Data</button></td>
-					</tr>
-				</table>
-			  </div>
-			</div>
-		</form>
+        
+		<h2>Exporting Annotations</h2>
+		<div class="panel panel-default">
+		  <div class="panel-body">
+			<?php
+				if (!$connectionOkay || !$tablesOkay)
+					showAlert('Fix the database connection above before exporting data!',true);
+				elseif ($annotationCount <= 0)
+					showAlert('No annotations are currently found. Time to annotate some!',true);
+				else
+					showAlert("$annotationCount annotations are found.",false);
+			?>
+			<table>
+				<tr>
+					<td colspan="2">Download the annotations as a GZipped archive of A2 files (ST format):</td>
+				</tr>
+				<tr>
+					<td><button class="btn btn-danger" onclick="location.href='exportToST.php?filter';">Export Data (excluding None)</button></td>
+					<td><button class="btn btn-danger" onclick="location.href='exportToST.php';">Export Data</button></td>
+				</tr>
+			</table>
+		  </div>
+		</div>
 		
 		
         <form action="setup_access.php" method="POST">
