@@ -61,3 +61,15 @@
 .tt-suggestion p {
   margin: 0;
 }
+
+
+
+.btn-info:hover,
+.btn-info:focus,
+.btn-info:active,
+.btn-info.active,
+.open .dropdown-toggle.btn-info {
+  background-color: #114555;
+}
+
+
