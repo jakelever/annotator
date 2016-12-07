@@ -66,9 +66,6 @@
             <li class="active"><a href="annotations_view.php">View Annotations</a></li>
             <li><a href="annotate.php">New Annotation</a></li>
           </ul>
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="#">Log Out</a></li>
-          </ul>
         </div><!--/.nav-collapse -->
       </div>
       <!-- Main component for a primary marketing message or call to action -->
