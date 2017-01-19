@@ -103,7 +103,7 @@ def parseWordlistTerm(text):
 	return tuple([ token.word() for token in tokens.get(TokensAnnotation) ])
 		
 from __builtin__ import zip
-def selectSentences(outFile, textInput, textSourceInfo):
+def selectSentences(entityRequirements, outFile, textInput, textSourceInfo):
 	pipeline = getPipeline()
 
 	#textInput = [ u'She noticed that a deletion of PTEN correlates with sensitivity to Erlotinib.' ]
@@ -201,21 +201,16 @@ def selectSentences(outFile, textInput, textSourceInfo):
 			zipped = zip(locs,terms,termtypesAndids)
 			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in zipped if not locs in locsToRemove]
 
-			cancerLocs,geneLocs = set(),set()
-			for loc,term,x in filtered:
-				for t,_ in x:
-					if t == 'cancer':
-						cancerLocs.add(loc)
-					elif t == 'gene':
-						geneLocs.add(loc)
+			requirementsMatched = { entityType:False for entityType in entityRequirements }
+			#requiredLocs = {}
 
-			overlap = [ t for t in cancerLocs if t in geneLocs ]
-			uniqCancerLocs = [ t for t in cancerLocs if not t in overlap ]
-			uniqGeneLocs = [ t for t in geneLocs if not t in overlap ]
-		
-			hasCancerAndGeneTerms = (len(cancerLocs)>=1 and len(geneLocs)>=1) and not (len(cancerLocs) == 1 and len(geneLocs)==1 and len(overlap)==1)
+			for loc,term,typeAndIDs in filtered:
+				for entityType,_ in typeAndIDs:
+					if entityType in entityRequirements:
+						requirementsMatched[entityType] = True	
+						#uniqLocs.add(loc)
 
-			if hasCancerAndGeneTerms:
+			if all(requirementsMatched):
 				out = [pmid,pmcid,pubYear,unicode(sentence)]
 				for (startT,endT),term,thesetypesAndIDs in filtered:
 					for type,termid in thesetypesAndIDs:
@@ -238,6 +233,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='')
 
 	parser.add_argument('--wordlistInfo', required=True, type=str, help='A tab-delimited file with an entity type and filename on each line')
+	parser.add_argument('--entityRequirements', required=False, type=str, help='Comma-delimited list of types of entities that must be in a sentence')
 
 	parser.add_argument('--stopwordsFile',  type=str, help='A path to a stopwords file that will be removed from term-lists (e.g. the, there)')
 	parser.add_argument('--removeShortwords', help='Remove short words from any term lists (<=2 length)', action='store_true')
@@ -266,6 +262,13 @@ if __name__ == "__main__":
 				split = line.strip().split('\t')
 				tmpWordlist[split[0]] = split[1].split('|')
 		wordlists[termType] = tmpWordlist
+
+	if args.entityRequirements:
+		print "Loading entity requirements..."
+		entityRequirements = set(args.entityRequirements.lower().strip().split(','))
+	else:
+		print "Setting entity argument requirements to all known entity types: ", wordlists.keys()
+		entityRequirements = set(wordlists.keys())
 
 	print "Generating lookup table..."
 	duplicates = set()
@@ -309,13 +312,17 @@ if __name__ == "__main__":
 
 	outFile = codecs.open(args.outFile, "w", "utf-8")
 
+	# Create wrapper that passes in the entity requirements
+	def selectSentencesWrapper(outFile, textInput, textSourceInfo):
+		selectSentences(entityRequirements, outFile, textInput, textSourceInfo)
+
 	print "Starting processing..."
 	startTime = time.time()
 	# And now we try to process either an abstract file, single article file or multiple
 	# article files
 	try:
 		if args.abstractsFile:
-			processAbstractFile(args.abstractsFile, outFile, selectSentences)
+			processAbstractFile(args.abstractsFile, outFile, selectSentencesWrapper)
 		elif args.articleFile:
 			# Just pull the filename and pass that, instead of the object
 			filename = args.articleFile.name
