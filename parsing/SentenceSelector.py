@@ -97,37 +97,6 @@ def getTermIDsAndLocations(np, lookupDict):
 	# Then return the found term IDs
 	return termtypesAndids,terms,locs
 
-from __builtin__ import zip
-def selectSentencesDebug(outFile, textInput, textSourceInfo):
-	pipeline = getPipeline()
-
-	#textInput = [ u'She noticed that a deletion of PTEN correlates with sensitivity to Erlotinib.' ]
-	#textInput = [u'The V600E mutation in BRAF is known to cause resistance to Gefitinib.' ]
-	print textSourceInfo
-	print textInput
-
-	pmid = str(textSourceInfo['pmid'])
-	pmcid = str(textSourceInfo['pmcid'])
-
-	#print textInput
-	assert isinstance(textInput, list)
-	for text in textInput:
-		text = text.strip().replace('\n', ' ').replace('\r',' ').replace('\t',' ')
-		text = text.replace(u'\u2028',' ').replace(u'\u2029',' ').replace(u'\u202F',' ').replace(u'\u2012',' ').replace(u'\u2010',' ')
-		text = "".join(ch for ch in text if unicodedata.category(ch)[0]!="C")
-		text = text.strip()
-
-		if len(text) == 0:
-			continue
-
-		assert isinstance(text, str) or isinstance(text, unicode)
-
-		count = 0
-		document = pipeline.process(text)
-		for sentence in document.get(SentencesAnnotation):
-			count += 1
-		print count
-
 def parseWordlistTerm(text):
 	minipipeline = getMiniPipeline()
 	tokens = minipipeline.process(text)
@@ -290,45 +259,6 @@ def selectSentences(outFile, textInput, textSourceInfo):
 
 			
 
-# Find all co-occurrences for a list of text, or just a line of text
-def extractTermCoOccurrences_OneList(outFile, textInput, textSourceInfo):
-
-	# First check if it is a list of text or just text
-	if isinstance(textInput, list):
-		textList = textInput
-	else:
-		textList = [textInput]
-	
-	# Go through each bit of text
-	for text in textList:
-		# Remove weird text issues
-		text = handleEncoding(text)
-		
-		# Extract each sentence
-		for sentence in sentenceSplit(text):
-			
-			# Tokenize each sentence
-			tokens = tokenize(sentence)
-			
-			# Get the IDs of terms found in the sentence
-			termIDs = getID_FromLongestTerm(tokens, idLookup1)
-			
-			terms = [ (i,reverseLookup[i]) for i in termIDs ]
-
-			if sentence.lower().startswith("insulin"):
-				print "-------------------------"
-				print sentence
-				print tokens
-				#print [ unicodeLower(t) for t in tokens ]
-				print terms
-				print "-------------------------"
-				#print
-			
-			# Print co-occurrences to output file immediately
-			for (i,j) in itertools.product(termIDs,termIDs):
-				if i<j:
-					outFile.write("%d\t%d\t%d\n" % (i, j, 1))
-		
 # It's the main bit. Yay!
 if __name__ == "__main__":
 
