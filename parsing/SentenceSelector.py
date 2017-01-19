@@ -182,11 +182,6 @@ def selectSentences(outFile, textInput, textSourceInfo):
 					terms.append((w,))
 					locs.append((i,i+1))
 
-			#print "-"*30
-			#print sentence
-			#print termtypesAndids
-			#print snvMatches
-			
 			locsToRemove = set()
 			
 			acronyms = detectAcronyms(words)
@@ -206,9 +201,6 @@ def selectSentences(outFile, textInput, textSourceInfo):
 			zipped = zip(locs,terms,termtypesAndids)
 			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in zipped if not locs in locsToRemove]
 
-			#print "len(list(zipped))", len(list(zipped))
-			#print "len(filtered)", len(filtered)
-
 			cancerLocs,geneLocs = set(),set()
 			for loc,term,x in filtered:
 				for t,_ in x:
@@ -223,16 +215,8 @@ def selectSentences(outFile, textInput, textSourceInfo):
 		
 			hasCancerAndGeneTerms = (len(cancerLocs)>=1 and len(geneLocs)>=1) and not (len(cancerLocs) == 1 and len(geneLocs)==1 and len(overlap)==1)
 
-			#types = set ( [ t for x in termtypesAndids for t,_ in x ] )
-			#if len(types) == 3: # All three types: drugs,genes,mutationTypes
-			#if "cancer" in types and "gene" in types:
 			if hasCancerAndGeneTerms:
-				#print words
-				print "-"*30
-				#print textSourceInfo
-				#print sentence
 				out = [pmid,pmcid,pubYear,unicode(sentence)]
-				#for thesetypesAndIDs,term,(startT,endT) in zip(termtypesAndids,terms,locs):
 				for (startT,endT),term,thesetypesAndIDs in filtered:
 					for type,termid in thesetypesAndIDs:
 						startPos = positions[startT][0]
@@ -245,18 +229,6 @@ def selectSentences(outFile, textInput, textSourceInfo):
 
 				outLine = "\t".join(out)
 				outFile.write(outLine + "\n")
-				#for (type,termid),term,loc in zip(termids,terms,locs):
-				#	print type,termid,loc
-				#	if type == 0:
-				#		print drugs[termid]
-				#	elif type == 1:
-				#		print genes[termid]
-				#	elif type == 2:
-				#		print mutationKeywords[termid]
-
-	#print "MOO:"
-	#print lookup[(u'erlotinib',)]		
-
 			
 
 # It's the main bit. Yay!
