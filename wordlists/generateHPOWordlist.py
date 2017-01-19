@@ -7,9 +7,9 @@ import codecs
 import pronto
 from collections import defaultdict
 
-def augmentTermList(terms):
+def tidyTermList(terms):
 	"""
-	Adds additional spellings and plurals to a list of cancer terms
+	Does a little bit of extra tidying to a term list
 	
 	Args:
 		terms (list of strings): List of strings of terms
@@ -19,38 +19,22 @@ def augmentTermList(terms):
 	"""
 	
 	# Lower case everything (if not already done anyway)
-	terms = [ t.lower() for t in terms ]
+	terms = [ t.lower().strip() for t in terms ]
 	
-	# A list of short cancer terms that are acceptable (others like ALL are too general and excluded)
-	acceptedShortTerms = ["gbm","aml","crc","hcc"]
-	
-	# Filter out smaller terms except the allowed ones
-	terms = [ t for t in terms if len(t) > 3 or t in acceptedShortTerms ]
-	
+	# Remove short terms
+	terms = [ t for t in terms if len(t) > 3 ]
+
+	# Remove terms that start with hyphens
+	terms = [ t for t in terms if not t.startswith('-') ]
+
+	# List of characters that are not allowed in terms
+	filterChars = [ ',', '(', ')', '[', ']', '{', '}' ]
+
 	# Filter out terms with a comma
-	terms = [ t for t in terms if not ',' in t ]
+	for char in filterChars:
+		terms = [ t for t in terms if not char in t ]
 	
-	# Try the British spelling of tumor
-	tumourTerms = [ t.replace('tumor','tumour') for t in terms ]
-	
-	# Terms that we can add an 'S' to pluralise (if not already included)
-	pluralEndings = ["tumor", "tumour", "neoplasm", "cancer", "carcinoma", "sarcoma", "lymphoma", "melanoma"]
-	
-	# Check if any term ends with one of the plural endings, and then pluralise it
-	plurals = []
-	for t in terms:
-		pluralize = False
-		for e in pluralEndings:
-			if t.endswith(e):
-				pluralize = True
-				break
-
-		if pluralize:
-			plurals.append(t + "s")
-
-	# Sorted and unique the terms back together
-	merged = sorted(list(set(terms + tumourTerms + plurals)))
-	return merged
+	return terms
 
 def findTerm(ont,name):
 	"""
@@ -141,17 +125,6 @@ if __name__ == '__main__':
 		# Skip down to the grandchildren of the cancer term and then find all their descendents (recursive children)
 		count = 0
 		for term in ont:
-			#print term
-			#print term.other
-			#print getCUIDs(term)
-			#print "-"*30
-			#count += 1
-
-			#if count > 10:
-			#	break
-			#else:
-			#	continue
-
 			# Get the CUIDs for this term
 			cuids = getCUIDs(term)
 
@@ -168,7 +141,7 @@ if __name__ == '__main__':
 			mmterms = [ mmterm.lower() for mmterm in mmterms ]
 			
 			# Add extra spellings and plurals
-			#mmterms = augmentTermList(mmterms)
+			mmterms = tidyTermList(mmterms)
 
 			# Filter out general terms
 			mmterms = [ mmterm for mmterm in mmterms if not mmterm in stopwords ]
