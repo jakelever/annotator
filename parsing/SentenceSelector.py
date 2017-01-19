@@ -335,9 +335,7 @@ if __name__ == "__main__":
 	# Arguments for the command line
 	parser = argparse.ArgumentParser(description='')
 
-	parser.add_argument('--cancerList', required=True, type=str, help='')
-	parser.add_argument('--geneList', required=True, type=str, help='')
-	parser.add_argument('--mutationKeywords', required=True, type=str, help='')
+	parser.add_argument('--wordlistInfo', required=True, type=str, help='A tab-delimited file with an entity type and filename on each line')
 
 	parser.add_argument('--stopwordsFile',  type=str, help='A path to a stopwords file that will be removed from term-lists (e.g. the, there)')
 	parser.add_argument('--removeShortwords', help='Remove short words from any term lists (<=2 length)', action='store_true')
@@ -350,42 +348,31 @@ if __name__ == "__main__":
 
 	args = parser.parse_args()
 
-	print "Loading cancer list..."
-	with codecs.open(args.cancerList, "r", "utf-8") as f1:
-		cancers = {}
-		for line in f1:
-			split = line.split('\t')
-			cancers[split[0]] = split[1].strip().split('|')
-
-	print "Loading gene list..."
-	with codecs.open(args.geneList, "r", "utf-8") as f2:
-		genes = {}
-		for line in f2:
-			split = line.split('\t')
-			genes[split[0]] = split[1].strip().split('|')
-
-	print "Loading mutation list..."
-	with codecs.open(args.mutationKeywords, "r", "utf-8") as f3:
-		mutationKeywords = { i : line.strip().split('|') for i,line in enumerate(f3) } 
-
-
-	#drugLookup = { x:i for i,x in enumerate(drugs) }
-	#geneLookup = { x:i for i,x in enumerate(genes) }
-	#mutationLookup = { x:i for i,x in enumerate(mutationKeywords) }
+	wordlistInfo = {}
+	print "Loading wordlist info..."
+	with open(args.wordlistInfo,'r') as wordlistF:
+		for wordlistLine in wordlistF:
+			termType,wordlistFilename = wordlistLine.strip().split('\t')
+			wordlistInfo[termType] = wordlistFilename
+	
+	wordlists = {}
+	for termType,wordlistFilename in wordlistInfo.iteritems():
+		print "Loading wordlist [%s]..." % entityType
+		tmpWordlist = {}
+		with codecs.open(wordlistFilename, "r", "utf-8") as f:
+			for line in f:
+				split = line.strip().split('\t')
+				tmpWordlist[split[0]] = split[1].split('|')
+		wordlists[termType] = tmpWordlist
 
 	print "Generating lookup table..."
 	duplicates = set()
 	lookup = defaultdict(list)
-	for termType,mainDict in zip(['cancer','gene','mutation'],[cancers,genes,mutationKeywords]):
-	#for type,mainList in enumerate([drugs,genes,mutationKeywords]):
+	for termType,mainDict in wordlists.iteritems():
 		for id,lst in mainDict.iteritems():
 			lst = list(set(lst))
 			keys = set( [ parseWordlistTerm(x.lower()) for x in lst ] )
-			#for x in lst:
 			for key in keys:
-				#key = tuple(x.lower().split(' '))
-				#key = parseWordlistTerm(x.lower())
-				
 				matching = None
 				if key in lookup:
 					prevItems = lookup[key]
