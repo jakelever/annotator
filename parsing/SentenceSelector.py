@@ -287,7 +287,7 @@ if __name__ == "__main__":
 	
 	wordlists = {}
 	for termType,wordlistFilename in wordlistInfo.iteritems():
-		print "Loading wordlist [%s]..." % entityType
+		print "Loading wordlist [%s]..." % termType
 		tmpWordlist = {}
 		with codecs.open(wordlistFilename, "r", "utf-8") as f:
 			for line in f:
