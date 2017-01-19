@@ -119,6 +119,7 @@ if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Generate term list from an ontology file and UMLS Metathesarus for cancer-specific terms')
 	parser.add_argument('--ontologyFile', required=True, type=str, help='Path to the Disease Ontology OBO file')
+	parser.add_argument('--stopwordsFile',required=True,type=str,help='File containing terms to ignore')
 	parser.add_argument('--umlsConceptFile', required=True, type=str, help='Path on the MRCONSO.RRF file in UMLS metathesaurus')
 	parser.add_argument('--outFile', required=True, type=str, help='Path to output wordlist file')
 	args = parser.parse_args()
@@ -129,6 +130,11 @@ if __name__ == '__main__':
 	print "Loading disease ontology..."
 	ont = pronto.Ontology(args.ontologyFile)
 	#cancerTerm = findTerm(ont,'cancer')
+
+	print "Loading stopwords..."
+	with codecs.open(args.stopwordsFile,'r','utf8') as f:
+		stopwords = [ line.strip().lower() for line in f ]
+		stopwords = set(stopwords)
 
 	print "Processing"
 	with codecs.open(args.outFile,'w','utf8') as outF:
@@ -163,6 +169,9 @@ if __name__ == '__main__':
 			
 			# Add extra spellings and plurals
 			#mmterms = augmentTermList(mmterms)
+
+			# Filter out general terms
+			mmterms = [ mmterm for mmterm in mmterms if not mmterm in stopwords ]
 
 			# Do some trimming
 			mmterms = [ mmterm.strip() for mmterm in mmterms ]
