@@ -103,11 +103,8 @@ def parseWordlistTerm(text):
 	return tuple([ token.word() for token in tokens.get(TokensAnnotation) ])
 		
 from __builtin__ import zip
-def selectSentences(entityRequirements, outFile, textInput, textSourceInfo):
+def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detectVariants, variantStopwords, detectAcronyms, outFile, textInput, textSourceInfo):
 	pipeline = getPipeline()
-
-	#textInput = [ u'She noticed that a deletion of PTEN correlates with sensitivity to Erlotinib.' ]
-	#textInput = [ u'The V600E mutation in BRAF is known to cause resistance to Gefitinib.' ]
 
 	pmid = str(textSourceInfo['pmid'])
 	pmcid = str(textSourceInfo['pmcid'])
@@ -115,10 +112,9 @@ def selectSentences(entityRequirements, outFile, textInput, textSourceInfo):
 
 	print "pmid:%s pmcid:%s" % (pmid,pmcid)
 
-	driven1 = re.compile(re.escape('-driven'), re.IGNORECASE)
-	driven2 = re.compile(re.escape('- driven'), re.IGNORECASE)
+	#driven1 = re.compile(re.escape('-driven'), re.IGNORECASE)
+	#driven2 = re.compile(re.escape('- driven'), re.IGNORECASE)
 
-	#print textInput
 	assert isinstance(textInput, list)
 	for text in textInput:
 		text = text.strip().replace('\n', ' ').replace('\r',' ').replace('\t',' ')
@@ -127,13 +123,8 @@ def selectSentences(entityRequirements, outFile, textInput, textSourceInfo):
 		text = text.decode('utf-8','ignore').encode("utf-8")
 		text = text.strip()
 
-		#text = text.replace('-driven',' driven')
-		#text = text.replace('- driven',' driven')
-		#text = text.replace('-Driven',' Driven')
-		#text = text.replace('- Driven',' Driven')
-
-		text = driven1.sub(' driven',text)
-		text = driven2.sub(' driven',text)
+		#text = driven1.sub(' driven',text)
+		#text = driven2.sub(' driven',text)
 
 		if len(text) == 0:
 			continue
@@ -156,46 +147,52 @@ def selectSentences(entityRequirements, outFile, textInput, textSourceInfo):
 				words.append(word)
 				positions.append((startPos,endPos))
 			
-			#print "-"*30
-			#print words
 			
-			
-			snvRegex = r'^[A-Z][0-9]+[A-Z]$'
-			snvMatches = [ not (re.match(snvRegex,w) is None) for w in words ]
+
 
 			termtypesAndids,terms,locs = getTermIDsAndLocations(words,lookup)
-			fusionTermtypesAndids,fusionTerms,fusionLocs = detectFusionTerms(words,lookup)
-			
-			termtypesAndids += fusionTermtypesAndids
-			terms += fusionTerms
-			locs += fusionLocs
-			
-			for i,(w,snvMatch) in enumerate(zip(words,snvMatches)):
-				if snvMatch:
-					termtypesAndids.append([('mutation',['snv'])])
-					terms.append((w,))
-					locs.append((i,i+1))
 
-			for i,w in enumerate(words):
-				if w.lower().startswith("mir-") or w.lower().startswith("hsa-mir-") or w.lower().startswith("microrna-"):
-					termtypesAndids.append([('gene',['mrna'])])
-					terms.append((w,))
-					locs.append((i,i+1))
+			if detectFusions:
+				fusionTermtypesAndids,fusionTerms,fusionLocs = detectFusionTerms(words,lookup)
+				
+				termtypesAndids += fusionTermtypesAndids
+				terms += fusionTerms
+				locs += fusionLocs
+		
+			if detectVariants:
+				#snvRegex = r'^[A-Z][0-9]+[A-Z]$'
+				snvRegex = r'^[ACDEFGHIKLMNPQRSTVWY][1-9][0-9]*[ACDEFGHIKLMNPQRSTVWY]$'
+				filteredWords = [ w for w in words if not w in variantStopwords ]
+				snvMatches = [ not (re.match(snvRegex,w) is None) for w in filteredWords ]
+
+				for i,(w,snvMatch) in enumerate(zip(words,snvMatches)):
+					if snvMatch:
+						termtypesAndids.append([('mutation',['snv'])])
+						terms.append((w,))
+						locs.append((i,i+1))
+
+			if detectMicroRNA:
+				for i,w in enumerate(words):
+					if w.lower().startswith("mir-") or w.lower().startswith("hsa-mir-") or w.lower().startswith("microrna-"):
+						termtypesAndids.append([('gene',['mrna'])])
+						terms.append((w,))
+						locs.append((i,i+1))
 
 			locsToRemove = set()
-			
-			acronyms = detectAcronyms(words)
-			for (wordsStart,wordsEnd,acronymLoc) in acronyms:
-				wordIsTerm = (wordsStart,wordsEnd) in locs
-				acronymIsTerm = (acronymLoc,acronymLoc+1) in locs
-				
-				if wordIsTerm and acronymIsTerm:
-					# Remove the acronym
-					locsToRemove.add((acronymLoc,acronymLoc+1))
-				elif acronymIsTerm:
-					# Remove any terms that contain part of the spelt out word
-					newLocsToRemove = [ (i,j) for i in range(wordsStart,wordsEnd) for j in range(i,wordsEnd+1) ]
-					locsToRemove.update(newLocsToRemove)
+		
+			if detectAcronyms:
+				acronyms = detectAcronyms(words)
+				for (wordsStart,wordsEnd,acronymLoc) in acronyms:
+					wordIsTerm = (wordsStart,wordsEnd) in locs
+					acronymIsTerm = (acronymLoc,acronymLoc+1) in locs
+					
+					if wordIsTerm and acronymIsTerm:
+						# Remove the acronym
+						locsToRemove.add((acronymLoc,acronymLoc+1))
+					elif acronymIsTerm:
+						# Remove any terms that contain part of the spelt out word
+						newLocsToRemove = [ (i,j) for i in range(wordsStart,wordsEnd) for j in range(i,wordsEnd+1) ]
+						locsToRemove.update(newLocsToRemove)
 					
 
 			zipped = zip(locs,terms,termtypesAndids)
@@ -242,6 +239,12 @@ if __name__ == "__main__":
 	parser.add_argument('--articleFile', type=argparse.FileType('r'), help='PMC NXML file containing a single article')
 	parser.add_argument('--articleFilelist', type=argparse.FileType('r'), help='File containing filenames of multiple PMC NXML files')
 
+	parser.add_argument('--detectFusionGenes', action='store_true', help='Whether to try and detect fusion terms using the "gene" type')
+	parser.add_argument('--detectMicroRNA', action='store_true', help='Whether to detect microRNA mentions and add to the "gene" type')
+	parser.add_argument('--detectVariants', action='store_true', help='Whether to detect variants and add to the "mutation" type')
+	parser.add_argument('--variantsStopwordsFile', type=str, help='File containing stopwords terms to filter out extra variants before adding to "mutation" type')
+	parser.add_argument('--detectAcronyms', action='store_true', help='Whether to detect acronyms and filter out when the full term is there')
+
 	parser.add_argument('--outFile', type=str, help='File to output cooccurrences')
 
 	args = parser.parse_args()
@@ -262,6 +265,9 @@ if __name__ == "__main__":
 				split = line.strip().split('\t')
 				tmpWordlist[split[0]] = split[1].split('|')
 		wordlists[termType] = tmpWordlist
+
+	if args.detectFusionGenes:
+		assert "gene" in wordlists, "Can only use --detectFusionGenes if 'gene' is one of the wordlists"
 
 	if args.entityRequirements:
 		print "Loading entity requirements..."
@@ -306,6 +312,12 @@ if __name__ == "__main__":
 			if key in lookup:
 				del lookup[key]
 
+	variantStopwords = set()
+	if args.variantsStopwordsFile:
+		with codecs.open(args.variantsStopwordsFile, "r", "utf-8") as f4:
+			variantStopwords = [ line.strip() for line in f4 ]
+		variantStopwords = set(variantStopwords)
+
 	if args.removeShortwords:
 		print "Removing short words..."
 		lookup = { key:val for key,val in lookup.iteritems() if not (len(key)==1 and len(key[0]) <= 2) }
@@ -314,7 +326,7 @@ if __name__ == "__main__":
 
 	# Create wrapper that passes in the entity requirements
 	def selectSentencesWrapper(outFile, textInput, textSourceInfo):
-		selectSentences(entityRequirements, outFile, textInput, textSourceInfo)
+		selectSentences(entityRequirements, args.detectFusionGenes, args.detectMicroRNA, args.detectVariants, variantStopwords, args.detectAcronyms, outFile, textInput, textSourceInfo)
 
 	print "Starting processing..."
 	startTime = time.time()
