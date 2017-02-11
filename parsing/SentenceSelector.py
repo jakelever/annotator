@@ -210,7 +210,7 @@ def selectSentences(entityRequirements, outFile, textInput, textSourceInfo):
 						requirementsMatched[entityType] = True	
 						#uniqLocs.add(loc)
 
-			if all(requirementsMatched):
+			if all(requirementsMatched.values()):
 				out = [pmid,pmcid,pubYear,unicode(sentence)]
 				for (startT,endT),term,thesetypesAndIDs in filtered:
 					for type,termid in thesetypesAndIDs:
