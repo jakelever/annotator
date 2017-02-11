@@ -5,6 +5,7 @@ import ijson.backends.yajl2_cffi as ijson
 from collections import Counter
 import traceback
 import argparse
+import codecs
 
 if __name__ == '__main__':
         parser = argparse.ArgumentParser(description='Generate drug list from Wikidata resource')
