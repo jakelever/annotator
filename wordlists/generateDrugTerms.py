@@ -4,64 +4,60 @@ import json
 import ijson.backends.yajl2_cffi as ijson
 from collections import Counter
 import traceback
+import argparse
 
-filename = 'wikidata.json'
+if __name__ == '__main__':
+        parser = argparse.ArgumentParser(description='Generate drug list from Wikidata resource')
+	parser.add_argument('--wikidataFile', required=True, type=str, help='Path to Wikidata JSON file')
+	parser.add_argument('--drugStopwords',required=True,type=str,help='Stopword file for drugs')
+	parser.add_argument('--outFile', required=True, type=str, help='Path to output wordlist file')
+	args = parser.parse_args()
 
-mainCount = Counter()
-evidenceCount = Counter()
+	mainCount = Counter()
+	evidenceCount = Counter()
 
-IS_INSTANCE_ID = 'P31'
-PHARMA_DRUG_ID = 12140
+	with codecs.open(args.drugStopwords,'r','utf8') as f:
+		stopwords = [ line.strip().lower() for line in f ]
+		stopwords = set(stopwords)
 
-lines = []
+	IS_INSTANCE_ID = 'P31'
+	PHARMA_DRUG_ID = 12140
 
-with open(filename, 'r') as f:
-	#parser = ijson.parse(f)
-	#for i,(prefix, event, value) in enumerate(parser):
-	#	out = "%s\t%s\t%s" % (prefix,event,value)
-	#	print out.encode('utf8')
-	#	if i > 10000:
-	#		break
+	lines = []
 
-	for itemCount,item in enumerate(ijson.items(f,'item')):
-		#print item.keys()
+	with open(args.wikidataFile, 'r') as inF, codecs.open(args.outFile,'w','utf8') as outF:
+		for itemCount,item in enumerate(ijson.items(inF,'item')):
 
-		if (itemCount%1000) == 0:
-			print >> sys.stderr, itemCount
-		#if itemCount > 10000:
-		#	break
+			if (itemCount%1000) == 0:
+				print >> sys.stderr, itemCount
+			
+			id = item['id']
+			try:
+				if not 'en' in item['labels']:
+					continue
 
-		#print item
-		#print json.dumps(item, sort_keys=True, indent=4)
-		id = item['id']
-		try:
-			if not 'en' in item['labels']:
-				continue
+				name = item['labels']['en']['value']
+				aliases = []
+				if 'en' in item['aliases']:
+					aliases = [ a['value'] for a in item['aliases']['en'] ]
 
-			name = item['labels']['en']['value']
-			aliases = []
-			if 'en' in item['aliases']:
-				aliases = [ a['value'] for a in item['aliases']['en'] ]
+				aliases = [ a.replace(u"\xae", '') for a in aliases ]
 
-			aliases = [ a.replace(u"\xae", '') for a in aliases ]
+				instanceOfIds = []
+				if IS_INSTANCE_ID in item['claims']:
+					instanceOfIds = [ c['mainsnak']['datavalue']['value']['numeric-id'] for c in item['claims'][IS_INSTANCE_ID] ]
 
-			instanceOfIds = []
-			if IS_INSTANCE_ID in item['claims']:
-				instanceOfIds = [ c['mainsnak']['datavalue']['value']['numeric-id'] for c in item['claims'][IS_INSTANCE_ID] ]
+				if PHARMA_DRUG_ID in instanceOfIds:
+					allNames = sorted(list(set([name] + aliases)))
+					allNames = [ n for n in allNames if not n in stopwords ]
 
-			if PHARMA_DRUG_ID in instanceOfIds:
-				#print id, name, aliases
-				allNames = sorted(list(set([name] + aliases)))
-				for n in allNames:
-					assert not '|' in n, unicode(allNames)
-				allNamesTxt = u"|".join(allNames)
-				line = u"%s\t%s" % (id,allNamesTxt)
-				print line.encode('utf8')
-				#lines.append(line)
-				#break
-		except:
-			print >> sys.stderr, (id, sys.exc_info(), traceback.format_exc())
-	
-#lines = sorted(lines)
-#for l in lines:
-#	print l
+					if len(allNames) > 0:
+						for n in allNames:
+							assert not '|' in n, unicode(allNames)
+						allNamesTxt = u"|".join(allNames)
+						line = u"%s\t%s\n" % (id,allNamesTxt)
+
+						outF.write(line)
+			except:
+				print >> sys.stderr, (id, sys.exc_info(), traceback.format_exc())
+		
