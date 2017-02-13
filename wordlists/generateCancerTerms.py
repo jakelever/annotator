@@ -99,7 +99,7 @@ def loadMetathesaurus(filename):
 		Dictionary where each key (CUID) points to a list of strings (terms)
 	"""
 	meta = defaultdict(list)
-	with open(filename) as f:
+	with codecs.open(filename,'r','utf8') as f:
 		for line in f:
 			split = line.split('|')
 			cuid = split[0]
