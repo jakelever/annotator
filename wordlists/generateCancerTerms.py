@@ -161,9 +161,6 @@ if __name__ == '__main__':
 
 			if len(mmterms) > 0:
 				# Then output to the file
-				print cuids
-				print mmterms
-				print u"|".join(mmterms)
 				line = u"%s\t%s\n" % (term.id, u"|".join(mmterms))
 				outF.write(line)
 	print "Successfully output to %s" % args.outFile
