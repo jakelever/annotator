@@ -131,38 +131,48 @@ if __name__ == '__main__':
 		cancerstopwords = [ line.strip().lower() for line in f ]
 		cancerstopwords = set(cancerstopwords)
 
-	print "Processing"
+	print "Processing..."
+	allterms = []
+	# Skip down to the children of the cancer term and then find all their descendents (recursive children)
+	for term in cancerTerm.children.rchildren():
+		# Get the CUIDs for this term
+		cuids = getCUIDs(term)
+
+		# Get the English terms for the metathesaurus
+		mmterms = [ metathesaurus[cuid] for cuid in cuids ]
+
+		# Merge the lists together
+		mmterms = sum(mmterms, [])
+
+		# Add in the Disease Ontology term (in case it's not already in there)
+		mmterms.append(term.name)
+
+		# Lowercase everything
+		mmterms = [ mmterm.lower() for mmterm in mmterms ]
+		
+		# Filter out general terms
+		mmterms = [ mmterm for mmterm in mmterms if not mmterm in cancerstopwords ]
+
+		# Add extra spellings and plurals
+		mmterms = augmentTermList(mmterms)
+
+		# Remove any duplicates and sort it
+		mmterms = sorted(list(set(mmterms)))
+
+		if len(mmterms) > 0:
+			tmpterm = (term.id, u"|".join(mmterms))
+			allterms.append(tmpterm)
+
+
+	allterms = sorted(allterms)
+	print "Generated %d terms" % len(allterms)
+	
+	print "Outputting to file..."
 	with codecs.open(args.outFile,'w','utf8') as outF:
-		# Skip down to the children of the cancer term and then find all their descendents (recursive children)
-		for term in cancerTerm.children.rchildren():
-			# Get the CUIDs for this term
-			cuids = getCUIDs(term)
+		for termid, termtext in allterms:
+			line = u"%s\t%s\n" % (termid,termtext)
+			outF.write(line)
 
-			# Get the English terms for the metathesaurus
-			mmterms = [ metathesaurus[cuid] for cuid in cuids ]
-
-			# Merge the lists together
-			mmterms = sum(mmterms, [])
-
-			# Add in the Disease Ontology term (in case it's not already in there)
-			mmterms.append(term.name)
-
-			# Lowercase everything
-			mmterms = [ mmterm.lower() for mmterm in mmterms ]
-			
-			# Filter out general terms
-			mmterms = [ mmterm for mmterm in mmterms if not mmterm in cancerstopwords ]
-
-			# Add extra spellings and plurals
-			mmterms = augmentTermList(mmterms)
-
-			# Remove any duplicates and sort it
-			mmterms = sorted(list(set(mmterms)))
-
-			if len(mmterms) > 0:
-				# Then output to the file
-				line = u"%s\t%s\n" % (term.id, u"|".join(mmterms))
-				outF.write(line)
 	print "Successfully output to %s" % args.outFile
 
 		
