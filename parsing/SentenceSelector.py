@@ -6,7 +6,7 @@ from collections import Counter
 import itertools
 from textExtractionUtils import *
 import re
-from AcronymDetect import detectAcronyms
+from AcronymDetect import acronymDetection
 
 from java.util import *
 from edu.stanford.nlp.pipeline import *
@@ -33,7 +33,7 @@ def getMiniPipeline():
 		minipipeline = StanfordCoreNLP(props, False)
 	return minipipeline
 
-def detectFusionTerms(words, lookupDict):
+def fusionGeneDetection(words, lookupDict):
 	termtypesAndids,terms,locs = [],[],[]
 	origWords = list(words)
 	words = [ w.lower() for w in words ]
@@ -152,8 +152,8 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 			termtypesAndids,terms,locs = getTermIDsAndLocations(words,lookup)
 
-			if detectFusions:
-				fusionTermtypesAndids,fusionTerms,fusionLocs = detectFusionTerms(words,lookup)
+			if detectFusionGenes:
+				fusionTermtypesAndids,fusionTerms,fusionLocs = fusionGeneDetection(words,lookup)
 				
 				termtypesAndids += fusionTermtypesAndids
 				terms += fusionTerms
@@ -181,7 +181,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 			locsToRemove = set()
 		
 			if detectAcronyms:
-				acronyms = detectAcronyms(words)
+				acronyms = acronymDetection(words)
 				for (wordsStart,wordsEnd,acronymLoc) in acronyms:
 					wordIsTerm = (wordsStart,wordsEnd) in locs
 					acronymIsTerm = (acronymLoc,acronymLoc+1) in locs
@@ -229,7 +229,7 @@ if __name__ == "__main__":
 	# Arguments for the command line
 	parser = argparse.ArgumentParser(description='')
 
-	parser.add_argument('--wordlistInfo', required=True, type=str, help='A tab-delimited file with an entity type and filename on each line')
+	parser.add_argument('--wordlistInfo', required=True, type=str, help='A tab-delimited file with an entity type and filename on each line. Each wordlist can be one column (with no IDs) or two column tab-delimited (with the ID in the first and terms in the second). The terms can be separated with a | character.')
 	parser.add_argument('--entityRequirements', required=False, type=str, help='Comma-delimited list of types of entities that must be in a sentence')
 
 	parser.add_argument('--stopwordsFile',  type=str, help='A path to a stopwords file that will be removed from term-lists (e.g. the, there)')
@@ -261,9 +261,21 @@ if __name__ == "__main__":
 		print "Loading wordlist [%s]..." % termType
 		tmpWordlist = {}
 		with codecs.open(wordlistFilename, "r", "utf-8") as f:
-			for line in f:
+			columnSet,isTwoColumn = False,False
+			for i,line in enumerate(f):
 				split = line.strip().split('\t')
-				tmpWordlist[split[0]] = split[1].split('|')
+				if not columnSet:
+					assert len(split) == 1 or len(split) == 2, "Word-list file (%s) must be one or two columned" % wordlistFilename
+					isTwoColumn = (len(split)==2)
+					columnSet = True
+
+				if isTwoColumn:
+					assert len(split) == 2, "Expecting two columns for entire file (%s)" % wordlistFilename
+					tmpWordlist[split[0]] = split[1].split('|')
+				else:
+					assert len(split) == 1, "Expecting one column for entire file (%s)" % wordlistFilename
+					tmpWordlist[i] = split[0].split('|')
+
 		wordlists[termType] = tmpWordlist
 
 	if args.detectFusionGenes:

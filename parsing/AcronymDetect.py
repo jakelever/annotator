@@ -39,7 +39,7 @@ def acronymMatch(words,pos,currentAcronym,atStart,subpos=None):
 		
 	return possibleStarts
 
-def detectAcronyms(words):
+def acronymDetection(words):
 	#print words
 	#sys.exit(0)
 	LRBs = [i for i, x in enumerate(words) if x == u'-LRB-']
