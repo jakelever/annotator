@@ -121,44 +121,54 @@ if __name__ == '__main__':
 		stopwords = set(stopwords)
 
 	print "Processing"
+	allterms = []
+	# Skip down to the grandchildren of the cancer term and then find all their descendents (recursive children)
+	count = 0
+	for term in ont:
+		# Get the CUIDs for this term
+		cuids = getCUIDs(term)
+
+		# Get the English terms for the metathesaurus
+		mmterms = [ metathesaurus[cuid] for cuid in cuids ]
+
+		# Merge the lists together
+		mmterms = sum(mmterms, [])
+
+		# Add in the Disease Ontology term (in case it's not already in there)
+		mmterms.append(term.name)
+
+		# Lowercase everything
+		mmterms = [ mmterm.lower() for mmterm in mmterms ]
+		
+		# Add extra spellings and plurals
+		mmterms = tidyTermList(mmterms)
+
+		# Filter out general terms
+		mmterms = [ mmterm for mmterm in mmterms if not mmterm in stopwords ]
+
+		# Do some trimming
+		mmterms = [ mmterm.strip() for mmterm in mmterms ]
+
+		# Remove any duplicates and sort it
+		mmterms = sorted(list(set(mmterms)))
+
+		# Remove any empties
+		mmterms = [ mmterm for mmterm in mmterms if len(mmterm) > 0 ]
+
+		if len(mmterms) > 0:
+			# Then output to the file
+			tmpterm = (term.id, u"|".join(mmterms))
+			allterms.append(tmpterm)
+	
+	allterms = sorted(allterms)
+	print "Generated %d terms" % len(allterms)
+	
+	print "Outputting to file..."
 	with codecs.open(args.outFile,'w','utf8') as outF:
-		# Skip down to the grandchildren of the cancer term and then find all their descendents (recursive children)
-		count = 0
-		for term in ont:
-			# Get the CUIDs for this term
-			cuids = getCUIDs(term)
-
-			# Get the English terms for the metathesaurus
-			mmterms = [ metathesaurus[cuid] for cuid in cuids ]
-
-			# Merge the lists together
-			mmterms = sum(mmterms, [])
-
-			# Add in the Disease Ontology term (in case it's not already in there)
-			mmterms.append(term.name)
-
-			# Lowercase everything
-			mmterms = [ mmterm.lower() for mmterm in mmterms ]
-			
-			# Add extra spellings and plurals
-			mmterms = tidyTermList(mmterms)
-
-			# Filter out general terms
-			mmterms = [ mmterm for mmterm in mmterms if not mmterm in stopwords ]
-
-			# Do some trimming
-			mmterms = [ mmterm.strip() for mmterm in mmterms ]
-
-			# Remove any duplicates and sort it
-			mmterms = sorted(list(set(mmterms)))
-
-			# Remove any empties
-			mmterms = [ mmterm for mmterm in mmterms if len(mmterm) > 0 ]
-
-			if len(mmterms) > 0:
-				# Then output to the file
-				line = "%s\t%s" % (term.id, "|".join(mmterms))
-				outF.write(line + "\n")
+		for termid, termtext in allterms:
+			line = u"%s\t%s\n" % (termid,termtext)
+			outF.write(line)
+	
 	print "Successfully output to %s" % args.outFile
 
 		
