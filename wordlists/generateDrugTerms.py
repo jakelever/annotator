@@ -49,8 +49,11 @@ if __name__ == '__main__':
 					instanceOfIds = [ c['mainsnak']['datavalue']['value']['numeric-id'] for c in item['claims'][IS_INSTANCE_ID] ]
 
 				if PHARMA_DRUG_ID in instanceOfIds:
-					allNames = sorted(list(set([name] + aliases)))
-					allNames = [ n for n in allNames if not n in stopwords ]
+					allNames = [name] + aliases
+					allNames = [ n.lower() for n in allNames ]
+					allNames = sorted(list(set(allNames)))
+					allNames = [ n for n in allNames if not n.lower() in stopwords ]
+					allNames = [ n for n in allNames if len(n) > 3 ]
 
 					if len(allNames) > 0:
 						for n in allNames:
