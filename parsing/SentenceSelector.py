@@ -353,12 +353,12 @@ if __name__ == "__main__":
 			# Just pull the filename and pass that, instead of the object
 			filename = args.articleFile.name
 			args.articleFile.close()
-			processArticleFiles(filename, outFile, selectSentences)
+			processArticleFiles(filename, outFile, selectSentencesWrapper)
 		elif args.articleFilelist:
 			# Extract the file list from another file
 			fileList = [ f.strip() for f in args.articleFilelist]
 		
-			processArticleFiles(fileList, outFile, selectSentences)
+			processArticleFiles(fileList, outFile, selectSentencesWrapper)
 	except:
 		print "Unexpected error:", sys.exc_info()[0]
 		print "COMMAND: " + " ".join(sys.argv)
