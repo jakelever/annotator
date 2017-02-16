@@ -8,6 +8,7 @@ from textExtractionUtils import *
 import re
 from AcronymDetect import acronymDetection
 import unicodedata
+import string
 
 from java.util import *
 from edu.stanford.nlp.pipeline import *
@@ -175,7 +176,8 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 			if detectMicroRNA:
 				for i,w in enumerate(words):
-					if w.lower().startswith("mir-") or w.lower().startswith("hsa-mir-") or w.lower().startswith("microrna-"):
+					lw = w.lower()
+					if lw.startswith("mir-") or lw.startswith("hsa-mir-") or lw.startswith("microrna-") or (lw.startswith("mir" and lw[4] in string.digits):
 						termtypesAndids.append([('gene',['mrna'])])
 						terms.append((w,))
 						locs.append((i,i+1))
