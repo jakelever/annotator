@@ -212,6 +212,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 					
 
 			zipped = zip(locs,terms,termtypesAndids)
+			# Now we have to remove the terms marked for deletion in the previous section
 			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in zipped if not locs in locsToRemove]
 			filtered = sorted(filtered)
 
@@ -219,7 +220,6 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 			# We'll attempt to merge terms (i.e. if a gene is referred to using two acronyms together)
 			# Example: Hepatocellular carcinoma (HCC) or HER2/ Neu or INK4B P15
-			print filtered
 			locsToRemove = set()
 			merged = []
 			for i in range(len(filtered)-1):
@@ -228,7 +228,6 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 				
 				# Check that the terms are beside each other or separated by a /,- or (
 				if startB == endA or (startB == (endA+1) and words[endA] in ['/','-','(']):
-					print filtered[i], filtered[i+1]
 					idsA,idsB = set(),set()
 
 					for termType, termIDs in termTypesAndIDsA:
@@ -255,11 +254,10 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 						filtered.append((thisLocs,thisTerms,thisTermTypesAndIDs))
 
+			# Now we have to remove the terms marked for deletion in the previous section
 			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in filtered if not locs in locsToRemove]
 			filtered = sorted(filtered)
 
-			print words
-						
 			
 			requirementsMatched = { entityType:False for entityType in entityRequirements }
 			#requiredLocs = {}
