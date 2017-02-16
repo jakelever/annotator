@@ -177,7 +177,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 			if detectMicroRNA:
 				for i,w in enumerate(words):
 					lw = w.lower()
-					if lw.startswith("mir-") or lw.startswith("hsa-mir-") or lw.startswith("microrna-") or (lw.startswith("mir" and lw[4] in string.digits):
+					if lw.startswith("mir-") or lw.startswith("hsa-mir-") or lw.startswith("microrna-") or (lw.startswith("mir") and lw[4] in string.digits):
 						termtypesAndids.append([('gene',['mrna'])])
 						terms.append((w,))
 						locs.append((i,i+1))
