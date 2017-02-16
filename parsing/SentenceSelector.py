@@ -227,7 +227,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 				(startB,endB),termsB,termTypesAndIDsB = filtered[i+1]
 				
 				# Check that the terms are beside each other or separated by a /,- or (
-				if startB == endA or (startB == (endA+1) and words[endA] in ['/','-','(']):
+				if startB == endA or (startB == (endA+1) and words[endA] in ['/','-','-LRB-']):
 					idsA,idsB = set(),set()
 
 					for termType, termIDs in termTypesAndIDsA:
@@ -239,6 +239,11 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 					idsIntersection = idsA.intersection(idsB)
 
+					# Detect if the second term is in brackets e.g. HER2 (ERBB2)
+					inBrackets = False
+					if startB == (endA+1) and words[endA] == '-LRB-' and words[endB] == '-RRB-':
+						inBrackets = True
+
 					# The two terms share IDs so we're going to merge them
 					if len(idsIntersection) > 0:
 						groupedByType = defaultdict(list)
@@ -248,8 +253,14 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 						locsToRemove.add((startA,endA))
 						locsToRemove.add((startB,endB))
 
-						thisLocs = (startA,endB)
-						thisTerms = tuple(words[startA:endB])
+						if inBrackets:
+							thisLocs = (startA,endB+1)
+							thisTerms = tuple(words[startA:endB+1])
+						else:
+							thisLocs = (startA,endB)
+							thisTerms = tuple(words[startA:endB])
+
+
 						thisTermTypesAndIDs = [ (termType,sorted(termIDs)) for termType,termIDs in groupedByType.iteritems() ]
 
 						filtered.append((thisLocs,thisTerms,thisTermTypesAndIDs))
