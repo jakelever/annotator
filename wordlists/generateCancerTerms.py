@@ -29,6 +29,9 @@ def augmentTermList(terms):
 
 	# Filter out terms with a comma
 	terms = [ t for t in terms if not ',' in t ]
+
+	# Filter out terms that start with "of "
+	terms = [ t for t in terms if not t.startswith('of ') ]
 	
 	# Try the British spelling of tumor
 	tumourTerms = [ t.replace('tumor','tumour') for t in terms ]
