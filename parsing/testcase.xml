@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE PubmedArticleSet SYSTEM "http://dtd.nlm.nih.gov/ncbi/pubmed/out/pubmed_170101.dtd">
+<PubmedArticleSet>
+  <PubmedArticle>
+    <MedlineCitation Status="In-Data-Review" Owner="NLM">
+      <PMID Version="1">27836926</PMID>
+      <DateCreated>
+        <Year>2016</Year>
+        <Month>11</Month>
+        <Day>12</Day>
+      </DateCreated>
+      <DateRevised>
+        <Year>2016</Year>
+        <Month>11</Month>
+        <Day>12</Day>
+      </DateRevised>
+      <Article PubModel="Print">
+        <Journal>
+          <ISSN IssnType="Electronic">1468-2834</ISSN>
+          <JournalIssue CitedMedium="Internet">
+            <Volume>45</Volume>
+            <Issue>6</Issue>
+            <PubDate>
+              <Year>2016</Year>
+              <Month>Nov</Month>
+            </PubDate>
+          </JournalIssue>
+          <Title>Age and ageing</Title>
+          <ISOAbbreviation>Age Ageing</ISOAbbreviation>
+        </Journal>
+        <ArticleTitle>New horizons: the management of hypertension in people with dementia.</ArticleTitle>
+        <Pagination>
+          <MedlinePgn>740-746</MedlinePgn>
+        </Pagination>
+        <Abstract>
+          <AbstractText NlmCategory="UNASSIGNED">
+The optimal management of hypertension in people with dementia is uncertain. This review explores if people with dementia experience greater adverse effects from antihypertensive medications, if cognitive function is protected or worsened by controlling blood pressure (BP) and if there are subgroups of people with dementia for whom antihypertensive therapy is more likely to be harmful. Robust evidence is scant, trials of antihypertensive medications have generally excluded those with dementia. Observational data show changes in risk association over the life course, with high BP being a risk factor for cognitive decline in mid-life, while low BP is predictive in later life. It is therefore possible that excessive BP lowering in older people with dementia might harm cognition. From the existing literature, there is no direct evidence of benefit or harm from treating hypertension in people with dementia. So what practical steps can the clinician take? Assess capacity, establish patient preferences when making treatment decisions, use ambulatory monitoring to thoroughly assess BP, individualise and consider deprescribing where side effects (e.g. hypotension) outweigh the benefits. Future research might include pragmatic randomised trials of targeted deprescribing, which include patient-centred outcome measures to help support decision-making and studies to address mechanistic uncertainties.
+</AbstractText>
+          <CopyrightInformation>© The Author 2016. Published by Oxford University Press on behalf of the British Geriatrics Society. All rights reserved. For permissions, please e-mail: journals.permissions@oup.com.</CopyrightInformation>
+        </Abstract>
+        <AuthorList CompleteYN="Y">
+          <Author ValidYN="Y">
+            <LastName>Harrison</LastName>
+            <ForeName>Jennifer Kirsty</ForeName>
+            <Initials>JK</Initials>
+            <AffiliationInfo>
+              <Affiliation>The Alzheimer Scotland Dementia Research Centre, Centre for Cognitive Ageing and Cognitive Epidemiology, University of Edinburgh, Edinburgh, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Van Der Wardt</LastName>
+            <ForeName>Veronika</ForeName>
+            <Initials>V</Initials>
+            <AffiliationInfo>
+              <Affiliation>Division of Rehabilitation &amp; Ageing, University of Nottingham, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Conroy</LastName>
+            <ForeName>Simon Paul</ForeName>
+            <Initials>SP</Initials>
+            <AffiliationInfo>
+              <Affiliation>Department of Health Sciences, University of Leicester, Leicester, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Stott</LastName>
+            <ForeName>David J</ForeName>
+            <Initials>DJ</Initials>
+            <AffiliationInfo>
+              <Affiliation>Institute of Cardiovascular and Medical Sciences, University of Glasgow, Glasgow, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Dening</LastName>
+            <ForeName>Tom</ForeName>
+            <Initials>T</Initials>
+            <AffiliationInfo>
+              <Affiliation>Division of Psychiatry and Applied Psychology, University of Nottingham, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Gordon</LastName>
+            <ForeName>Adam Lee</ForeName>
+            <Initials>AL</Initials>
+            <AffiliationInfo>
+              <Affiliation>University of Nottingham - Division of Medical Sciences and Graduate Entry Medicine, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Logan</LastName>
+            <ForeName>Pip</ForeName>
+            <Initials>P</Initials>
+            <AffiliationInfo>
+              <Affiliation>Division of Rehabilitation &amp; Ageing, University of Nottingham, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Welsh</LastName>
+            <ForeName>Tomas James</ForeName>
+            <Initials>TJ</Initials>
+            <AffiliationInfo>
+              <Affiliation>Division of Rehabilitation &amp; Ageing, University of Nottingham, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Taggar</LastName>
+            <ForeName>Jaspal</ForeName>
+            <Initials>J</Initials>
+            <AffiliationInfo>
+              <Affiliation>Division of Primary Care, University of Nottingham, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Harwood</LastName>
+            <ForeName>Rowan</ForeName>
+            <Initials>R</Initials>
+            <AffiliationInfo>
+              <Affiliation>Nottingham University Hospitals NHS Trust, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+          <Author ValidYN="Y">
+            <LastName>Gladman</LastName>
+            <ForeName>John R F</ForeName>
+            <Initials>JR</Initials>
+            <AffiliationInfo>
+              <Affiliation>Division of Rehabilitation &amp; Ageing, University of Nottingham, Nottingham, UK.</Affiliation>
+            </AffiliationInfo>
+          </Author>
+        </AuthorList>
+        <Language>eng</Language>
+        <PublicationTypeList>
+          <PublicationType UI="">Review</PublicationType>
+          <PublicationType UI="">Journal Article</PublicationType>
+        </PublicationTypeList>
+      </Article>
+      <MedlineJournalInfo>
+        <Country>England</Country>
+        <MedlineTA>Age Ageing</MedlineTA>
+        <NlmUniqueID>0375655</NlmUniqueID>
+        <ISSNLinking>0002-0729</ISSNLinking>
+      </MedlineJournalInfo>
+      <KeywordList Owner="NOTNLM">
+        <Keyword MajorTopicYN="N">decision-making</Keyword>
+        <Keyword MajorTopicYN="N">dementia</Keyword>
+        <Keyword MajorTopicYN="N">deprescribing</Keyword>
+        <Keyword MajorTopicYN="N">hypertension</Keyword>
+        <Keyword MajorTopicYN="N">individualise</Keyword>
+        <Keyword MajorTopicYN="N">older people</Keyword>
+      </KeywordList>
+    </MedlineCitation>
+    <PubmedData>
+      <History>
+        <PubMedPubDate PubStatus="received">
+          <Year>2016</Year>
+          <Month>04</Month>
+          <Day>15</Day>
+        </PubMedPubDate>
+        <PubMedPubDate PubStatus="accepted">
+          <Year>2016</Year>
+          <Month>08</Month>
+          <Day>03</Day>
+        </PubMedPubDate>
+        <PubMedPubDate PubStatus="entrez">
+          <Year>2016</Year>
+          <Month>11</Month>
+          <Day>13</Day>
+          <Hour>6</Hour>
+          <Minute>0</Minute>
+        </PubMedPubDate>
+        <PubMedPubDate PubStatus="pubmed">
+          <Year>2016</Year>
+          <Month>11</Month>
+          <Day>12</Day>
+          <Hour>6</Hour>
+          <Minute>0</Minute>
+        </PubMedPubDate>
+        <PubMedPubDate PubStatus="medline">
+          <Year>2016</Year>
+          <Month>11</Month>
+          <Day>12</Day>
+          <Hour>6</Hour>
+          <Minute>0</Minute>
+        </PubMedPubDate>
+      </History>
+      <PublicationStatus>ppublish</PublicationStatus>
+      <ArticleIdList>
+        <ArticleId IdType="pubmed">27836926</ArticleId>
+        <ArticleId IdType="pii">afw155</ArticleId>
+        <ArticleId IdType="doi">10.1093/ageing/afw155</ArticleId>
+      </ArticleIdList>
+    </PubmedData>
+  </PubmedArticle>
+</PubmedArticleSet>
