@@ -42,18 +42,23 @@ def fusionGeneDetection(words, lookupDict):
 
 	for i,word in enumerate(words):
 		split = re.split("[-/]",word)
-		if len(split) == 1:
+		fusionCount = len(split)
+		if fusionCount == 1:
 			continue
 			
 		allGenes = True
 		
 		geneIDs = ['fusion']
+		lookupIDCounter = Counter()
 		for s in split:
 			key = (s,)
 			if key in lookupDict:
 				isGene = False
 				for type,ids in lookupDict[key]:
 					if type == 'gene':
+						for tmpid in ids:
+							lookupIDCounter[tmpid] += 1
+
 						idsTxt = ";".join(map(str,ids))
 						geneIDs.append(idsTxt)
 						isGene = True
@@ -64,6 +69,13 @@ def fusionGeneDetection(words, lookupDict):
 			else:
 				allGenes = False
 				break
+
+		# We're going to check if there are any lookup IDs shared among all the "fusion" terms
+		# Hence this may not actually be a fusion, but just using multiple names of a gene
+		# e.g. HER2/neu
+		completeLookupIDs = [ id for id,count in lookupIDCounter.iteritems() if count == fusionCount ]
+		if len(completeLookupIDs) > 0:
+			geneIDs = completeLookupIDs
 	
 		if allGenes:
 			#geneTxt = ",".join(map(str,geneIDs))
