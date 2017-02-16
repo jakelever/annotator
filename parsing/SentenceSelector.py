@@ -2,7 +2,7 @@ import sys
 import fileinput
 import argparse
 import time
-from collections import Counter
+from collections import Counter, defaultdict
 import itertools
 from textExtractionUtils import *
 import re
@@ -213,7 +213,54 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 			zipped = zip(locs,terms,termtypesAndids)
 			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in zipped if not locs in locsToRemove]
+			filtered = sorted(filtered)
 
+
+
+			# We'll attempt to merge terms (i.e. if a gene is referred to using two acronyms together)
+			# Example: Hepatocellular carcinoma (HCC) or HER2/ Neu or INK4B P15
+			print filtered
+			locsToRemove = set()
+			merged = []
+			for i in range(len(filtered)-1):
+				(startA,endA),termsA,termTypesAndIDsA = filtered[i]
+				(startB,endB),termsB,termTypesAndIDsB = filtered[i+1]
+				
+				# Check that the terms are beside each other or separated by a /,- or (
+				if startB == endA or (startB == (endA+1) and words[endA] in ['/','-','(']):
+					print filtered[i], filtered[i+1]
+					idsA,idsB = set(),set()
+
+					for termType, termIDs in termTypesAndIDsA:
+						for termID in termIDs:
+							idsA.add((termType,termID))
+					for termType, termIDs in termTypesAndIDsB:
+						for termID in termIDs:
+							idsB.add((termType,termID))
+
+					idsIntersection = idsA.intersection(idsB)
+
+					# The two terms share IDs so we're going to merge them
+					if len(idsIntersection) > 0:
+						groupedByType = defaultdict(list)
+						for termType,termID in idsIntersection:
+							groupedByType[termType].append(termID)
+
+						locsToRemove.add((startA,endA))
+						locsToRemove.add((startB,endB))
+
+						thisLocs = (startA,endB)
+						thisTerms = tuple(words[startA:endB])
+						thisTermTypesAndIDs = [ (termType,sorted(termIDs)) for termType,termIDs in groupedByType.iteritems() ]
+
+						filtered.append((thisLocs,thisTerms,thisTermTypesAndIDs))
+
+			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in filtered if not locs in locsToRemove]
+			filtered = sorted(filtered)
+
+			print words
+						
+			
 			requirementsMatched = { entityType:False for entityType in entityRequirements }
 			#requiredLocs = {}
 
@@ -222,6 +269,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 					if entityType in entityRequirements:
 						requirementsMatched[entityType] = True	
 						#uniqLocs.add(loc)
+
 
 			if all(requirementsMatched.values()):
 				out = [pmid,pmcid,pubYear,unicode(sentence)]
