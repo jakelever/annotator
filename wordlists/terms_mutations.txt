@@ -1,7 +1,10 @@
-activation
-activations
+alanine methylation
 amplification
 amplifications
+amplified
+arginine methylation
+asparagine methylation
+aspartic acid methylation
 coding mutation
 coding mutations
 copy decrease
@@ -16,18 +19,15 @@ copy number decrease
 copy number decreased
 copy number increase
 copy number increased
-deactivation
-deactivations
+cysteine methylation
+decreased expression
 delete
 deleted
 deletion
 deletions
 demethylated
 demethylation
-depletion
-depletions
-dominant negative
-dominant-negative
+downregulation
 frameshift
 frame shift
 frame-shift
@@ -46,25 +46,59 @@ gain
 gained
 gain of function
 gain-of-function
-gains
 gains of function
+gene amplification
+gene amplified
+gene-amplified
+gene deleted
+gene-deleted
+gene deletion
+germline amplification
+germline deletion
+germline loh
+germline loss of heterozygosity
+germline loss-of-heterozygosity
+germline snv
+germline variant
+glutamic acid methylation
+glutamine methylation
+glycine methylation
 gof
-haploinsufficient
-haplo-insufficient
+heterozygous deletion
+high expression
+histidine methylation
+homozygous deletion
+homozygously deleted
 hotspot
 hotspots
+inactivation
+increased expression
 insertion
 insertions
+isoleucine methylation
+leucine methylation
 lof
+loh
 loss
+loss of expression
 loss of function
 loss-of-function
-lost
+loss of heterozygosity
+loss-of-heterozygosity
+low expression
+lysine methylation
+methionine methylation
 methylated
 methylation
 missense
 missense mutation
 missense mutations
+mutant
+mutated
+mutation
+mutational activation
+mutation inactivation
+mutations
 nonsense
 nonsense mutation
 nonsense mutations
@@ -82,15 +116,36 @@ overexpressed
 over-expressed
 overexpression
 over-expression
+phenylalanine methylation
+phosphorylated
 phosphorylation
 point mutated
 point mutation
+proline methylation
+promoter demethylation
+promoter methylation
 promoter mutation
 protein coding mutation
+protein overexpression
+protein over-expression
+protein underexpression
+protein under-expression
+rna overexpression
+rna over-expression
+rna underexpression
+rna under-expression
+serine methylation
+silenced
+single nucleotide polymorphism
 single nucleotide variant
+snp
 snv
-suppression
 switch of function
+threonine methylation
+transcriptional downregulation
+transcriptional down-regulation
+transcriptional upregulation
+transcriptional up-regulation
 translocation
 translocations
 truncated
@@ -98,9 +153,15 @@ truncated form
 truncating mutation
 truncation
 truncations
+tryptophan methylation
+tyrosine methylation
 underexpress
 under-express
 underexpressed
 under-expressed
 underexpression
 under-expression
+upregulation
+valine methylation
+variant
+variants
