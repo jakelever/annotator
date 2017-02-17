@@ -84,7 +84,14 @@ def fusionGeneDetection(words, lookupDict):
 			locs.append((i,i+1))
 			
 	return termtypesAndids,terms,locs
-	
+
+def cleanupVariant(variant):
+	variant = variant.upper().replace('P.','')
+	aminoAcidInfo = [('ALA','A'),('ARG','R'),('ASN','N'),('ASP','D'),('CYS','C'),('GLU','E'),('GLN','Q'),('GLY','G'),('HIS','H'),('ILE','I'),('LEU','L'),('LYS','K'),('MET','M'),('PHE','F'),('PRO','P'),('SER','S'),('THR','T'),('TRP','W'),('TYR','Y'),('VAL','V')]
+	for longA,shortA in aminoAcidInfo:
+		variant = variant.replace(longA,shortA)
+	return variant
+
 def getTermIDsAndLocations(np, lookupDict):
 	termtypesAndids,terms,locs = [],[],[]
 	# Lowercase all the tokens
@@ -182,12 +189,13 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 				filteredWords = [ w for w in words if not w in variantStopwords ]
 				snvMatches1 = [ not (re.match(variantRegex1,w) is None) for w in filteredWords ]
-				snvMatches2 = [ not (re.match(variantRegex2,w) is None) for w in filteredWords ]
+				snvMatches2 = [ not (re.match(variantRegex2,w,re.IGNORECASE) is None) for w in filteredWords ]
 
 				snvMatches = [ (match1 or match2) for match1,match2 in zip(snvMatches1,snvMatches2) ]
 				for i,(w,snvMatch) in enumerate(zip(words,snvMatches)):
 					if snvMatch:
-						termtypesAndids.append([('mutation',['snv'])])
+						cleaned = cleanupVariant(w)
+						termtypesAndids.append([('mutation',['snv',cleaned])])
 						terms.append((w,))
 						locs.append((i,i+1))
 			if detectPolymorphisms:
