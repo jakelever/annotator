@@ -195,7 +195,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 				for i,(w,snvMatch) in enumerate(zip(words,snvMatches)):
 					if snvMatch:
 						cleaned = cleanupVariant(w)
-						termtypesAndids.append([('mutation',['snv',cleaned])])
+						termtypesAndids.append([('mutation',["snv:%s"%cleaned])])
 						terms.append((w,))
 						locs.append((i,i+1))
 			if detectPolymorphisms:
