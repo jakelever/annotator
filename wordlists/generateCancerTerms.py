@@ -91,6 +91,26 @@ def getCUIDs(term):
 				cuids.append(cuid)
 	return cuids
 
+def getSynonyms(term):
+	"""
+	Gets all synonyms for a given pronto Ontology object (with IDs removed)
+
+	Args:
+		term (pronto Ontology): Term from ontology to extract CUIDs for
+
+	Returns:
+		list of synonyms
+	"""
+	synonyms = []
+	if 'synonym' in term.other:
+		for s in term.other['synonym']:
+			if 'EXACT' in s:
+				pos = s.index('EXACT')
+				before = s[:pos].strip()
+				if before[0] == '"' and before[-1] == '"':
+					synonyms.append(before.strip('"'))
+	return synonyms
+
 def loadMetathesaurus(filename):
 	"""
 	Loads the UMLS metathesaurus into a dictionary where CUID relates to a set of terms. Only English terms are included
@@ -149,6 +169,9 @@ if __name__ == '__main__':
 
 		# Add in the Disease Ontology term (in case it's not already in there)
 		mmterms.append(term.name)
+
+		# Add synonyms in the Disease Ontology term
+		mmterms += getSynonyms(term)
 
 		# Lowercase everything
 		mmterms = [ mmterm.lower() for mmterm in mmterms ]
