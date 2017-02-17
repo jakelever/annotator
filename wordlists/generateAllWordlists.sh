@@ -13,4 +13,7 @@ python generateGeneTerms.py --ncbiGeneInfoFile ../../cancermine/ncbi_gene_info -
 
 python generateHPOWordlist.py --ontologyFile hp.obo --stopwordsFile stopwords_hpo.combined.txt --umlsConceptFile /projects/bioracle/ncbiData/umls/2016AB/META/MRCONSO.RRF --outFile terms_phenotype.txt
 
-python generateDrugTerms.py --wikidataFile wikidata.json --drugStopwords stopwords_drugs.combined.txt --outFile terms_drugs.txt
+python generateDrugTerms.py --wikidataFile wikidata.json --drugStopwords stopwords_drugs.combined.txt --outFile terms_drugs.wikidata.txt
+
+
+cat terms_drugs.wikidata.txt terms_drugs.custom.txt > terms_drugs.txt
