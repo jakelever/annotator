@@ -194,28 +194,8 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 						terms.append((w,))
 						locs.append((i,i+1))
 
-			locsToRemove = set()
-		
-			if detectAcronyms:
-				acronyms = acronymDetection(words)
-				for (wordsStart,wordsEnd,acronymLoc) in acronyms:
-					wordIsTerm = (wordsStart,wordsEnd) in locs
-					acronymIsTerm = (acronymLoc,acronymLoc+1) in locs
-					
-					if wordIsTerm and acronymIsTerm:
-						# Remove the acronym
-						locsToRemove.add((acronymLoc,acronymLoc+1))
-					elif acronymIsTerm:
-						# Remove any terms that contain part of the spelt out word
-						newLocsToRemove = [ (i,j) for i in range(wordsStart,wordsEnd) for j in range(i,wordsEnd+1) ]
-						locsToRemove.update(newLocsToRemove)
-					
 
-			zipped = zip(locs,terms,termtypesAndids)
-			# Now we have to remove the terms marked for deletion in the previous section
-			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in zipped if not locs in locsToRemove]
-			filtered = sorted(filtered)
-
+			filtered = zip(locs,terms,termtypesAndids)
 
 
 			# We'll attempt to merge terms (i.e. if a gene is referred to using two acronyms together)
@@ -269,6 +249,26 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in filtered if not locs in locsToRemove]
 			filtered = sorted(filtered)
 
+			# And we'll check to see if there are any obvious acronyms
+			locsToRemove = set()
+			if detectAcronyms:
+				acronyms = acronymDetection(words)
+				for (wordsStart,wordsEnd,acronymLoc) in acronyms:
+					wordIsTerm = (wordsStart,wordsEnd) in locs
+					acronymIsTerm = (acronymLoc,acronymLoc+1) in locs
+					
+					if wordIsTerm and acronymIsTerm:
+						# Remove the acronym
+						locsToRemove.add((acronymLoc,acronymLoc+1))
+					elif acronymIsTerm:
+						# Remove any terms that contain part of the spelt out word
+						newLocsToRemove = [ (i,j) for i in range(wordsStart,wordsEnd) for j in range(i,wordsEnd+1) ]
+						locsToRemove.update(newLocsToRemove)
+					
+
+			# Now we have to remove the terms marked for deletion in the previous section
+			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in filtered if not locs in locsToRemove]
+			filtered = sorted(filtered)
 			
 			requirementsMatched = { entityType:False for entityType in entityRequirements }
 			#requiredLocs = {}
