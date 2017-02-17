@@ -1,7 +1,9 @@
 5-methyluridine
 a	
 abc
+adenine
 adenosine
+adenosine monophosphate
 adrenal
 ala
 alanine
@@ -24,21 +26,29 @@ deoxycytidine
 deoxyguanosine
 deoxyuridine
 dg
+dmso
+dnase
+dnase i
 dt
 du
 estrogen
+folate
 g	
 gln
 glu
 glutamic acid
 glutamine
+glutathione
 gly
 glycine
+gm-csf
 guanine
 guanosine
 his
 histidine
+igf1
 igf-1
+il-2
 ile
 isoleucine
 leu
@@ -49,11 +59,13 @@ lysine
 m5u	
 met
 methionine
+nitric oxide
 phe
 phenylalanine
 pro
 proline
 ras
+retinoic acid
 sec
 selenocysteine
 ser
@@ -72,3 +84,4 @@ uracil
 uridine
 val
 valine
+vegf

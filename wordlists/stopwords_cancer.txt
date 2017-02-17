@@ -1,19 +1,32 @@
+acoustic nerve
 adenocarcinoma
 adenocarcinomas
 adenoma
 adenomas
 advanced cancer
 aggressive cancer
+ampulla of vater
+anal canal
 angiogenesis
 angiogenic switch
+anterior wall of bladder
+anterior wall of nasopharynx
+appendix
 arms
+ascending colon
 at any time
 benign tumor
 benign tumors
 benign tumour
 benign tumours
 blast crisis
+body of pancreas
+body of penis
+body of stomach
+brain stem
 breast cancer diagnosis
+broad ligament
+caecum
 cancer
 cancer cell growth
 cancer progression
@@ -24,13 +37,49 @@ carcinogenesis
 carcinogenicity
 carcinoma
 carcinomas
+cardia
+carotid body
 ccc
+cecum
+cerebellum
+cheek mucosa
+choroid
+ciliary body
+clitoris
 clonal evolution
+conjunctiva
+cornea
+cortex of adrenal gland
 dedifferentiation
+descending colon
+dome of bladder
+duodenum
+endocrine pancreas
+endometrium
+epididymis
+external lower lip
+external upper lip
+extrahepatic bile duct
+fallopian tube
+frontal lobe
+frontal sinus
+fundus of stomach
+glans penis
+glottis
+hard palate
 hcl
+head of pancreas
 hereditary cancer
+ileum
 invasive cancer
+jejunum
+labium majus
+labium minus
+laryngeal cartilage
 lin
+lingual tonsil
+lower gum
+main bronchus
 malignancies
 malignancy
 malignant
@@ -38,8 +87,11 @@ malignant tumor
 malignant tumors
 malignant tumour
 malignant tumours
+mandible
 mass lesion
+maxillary sinus
 mcs
+medulla of adrenal gland
 metastases
 metastasis
 metastasize
@@ -68,20 +120,33 @@ neoplastic progression
 neoplastic transformation
 nevi
 nfl
+occipital lobe
 of lung adenocarcinoma
 of skin cancer
 oncogenesis
 other cancer
+pancreatic duct
+parametrium
+parathyroid gland
+paraurethral gland
+parietal lobe
+pineal gland
+pituitary gland
+pleura
 pml
+posterior wall of bladder
 pre-b
 precancerous lesions
 premalignant
+prepuce
 primary cancer
 primary tumor
 primary tumors
 primary tumour
 primary tumours
 progressive disease
+pyloric antrum
+pylorus
 rat sarcoma
 recurrence
 recurrent tumor
@@ -96,17 +161,34 @@ residual tumors
 residual tumour
 residual tumours
 resistant cancer
+retina
+retromolar area
+round ligament
 sarcoma
 sarcomas
+scrotum
 secondary cancer
+sigmoid colon
 single tumor
 single tumors
 single tumour
 single tumours
+soft palate
 solid tumor
 solid tumors
 solid tumour
 solid tumours
+spermatic cord
+spinal cord
+spinal meninges
+spleen
+subglottis
+sublingual gland
+submandibular gland
+tail of pancreas
+temporal lobe
+thorax
+transverse colon
 tumor angiogenesis
 tumor cell migration
 tumor growth
@@ -134,7 +216,13 @@ tumour recurrence
 tumours
 tumour stromal
 tumour vasculature
+upper gum
+ureteric orifice
+urethra
+uvula
+vallecula
 vascular tumor
 vascular tumors
 vascular tumours
+waldeyer's ring
 wtl
