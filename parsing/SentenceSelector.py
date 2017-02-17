@@ -177,10 +177,14 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 		
 			if detectVariants:
 				#snvRegex = r'^[A-Z][0-9]+[A-Z]$'
-				snvRegex = r'^[ACDEFGHIKLMNPQRSTVWY][1-9][0-9]*[ACDEFGHIKLMNPQRSTVWY]$'
-				filteredWords = [ w for w in words if not w in variantStopwords ]
-				snvMatches = [ not (re.match(snvRegex,w) is None) for w in filteredWords ]
+				variantRegex1 = r'^[ACDEFGHIKLMNPQRSTVWY][1-9][0-9]*[ACDEFGHIKLMNPQRSTVWY]$'
+				variantRegex2 = r'^(p\.)?((Ala)|(Arg)|(Asn)|(Asp)|(Cys)|(Glu)|(Gln)|(Gly)|(His)|(Ile)|(Leu)|(Lys)|(Met)|(Phe)|(Pro)|(Ser)|(Thr)|(Trp)|(Tyr)|(Val))[1-9][0-9]*((Ala)|(Arg)|(Asn)|(Asp)|(Cys)|(Glu)|(Gln)|(Gly)|(His)|(Ile)|(Leu)|(Lys)|(Met)|(Phe)|(Pro)|(Ser)|(Thr)|(Trp)|(Tyr)|(Val))$'
 
+				filteredWords = [ w for w in words if not w in variantStopwords ]
+				snvMatches1 = [ not (re.match(variantRegex1,w) is None) for w in filteredWords ]
+				snvMatches2 = [ not (re.match(variantRegex2,w) is None) for w in filteredWords ]
+
+				snvMatches = [ (match1 or match2) for match1,match2 in zip(snvMatches1,snvMatches2) ]
 				for i,(w,snvMatch) in enumerate(zip(words,snvMatches)):
 					if snvMatch:
 						termtypesAndids.append([('mutation',['snv'])])
