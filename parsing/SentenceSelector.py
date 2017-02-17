@@ -117,7 +117,7 @@ def parseWordlistTerm(text):
 	return tuple([ token.word() for token in tokens.get(TokensAnnotation) ])
 		
 from __builtin__ import zip
-def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detectVariants, variantStopwords, detectAcronyms, outFile, textInput, textSourceInfo):
+def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detectVariants, variantStopwords, detectAcronyms, detectPolymorphisms, outFile, textInput, textSourceInfo):
 	pipeline = getPipeline()
 
 	pmid = str(textSourceInfo['pmid'])
@@ -188,6 +188,18 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 				for i,(w,snvMatch) in enumerate(zip(words,snvMatches)):
 					if snvMatch:
 						termtypesAndids.append([('mutation',['snv'])])
+						terms.append((w,))
+						locs.append((i,i+1))
+			if detectPolymorphisms:
+				#snvRegex = r'^[A-Z][0-9]+[A-Z]$'
+				polymorphismRegex1 = r'^rs[1-9][0-9]*$'
+
+				#filteredWords = [ w for w in words if not w in variantStopwords ]
+				polyMatches = [ not (re.match(polymorphismRegex1,w) is None) for w in words ]
+
+				for i,(w,polyMatch) in enumerate(zip(words,polyMatches)):
+					if polyMatch:
+						termtypesAndids.append([('mutation',['polymorphism'])])
 						terms.append((w,))
 						locs.append((i,i+1))
 
@@ -322,6 +334,7 @@ if __name__ == "__main__":
 	parser.add_argument('--detectVariants', action='store_true', help='Whether to detect variants and add to the "mutation" type')
 	parser.add_argument('--variantsStopwordsFile', type=str, help='File containing stopwords terms to filter out extra variants before adding to "mutation" type')
 	parser.add_argument('--detectAcronyms', action='store_true', help='Whether to detect acronyms and filter out when the full term is there')
+	parser.add_argument('--detectPolymorphisms', action='store_true', help='Whether to detect polymorphisms by looking for dbSNP IDs (e.g. rs2736100)')
 
 	parser.add_argument('--outFile', type=str, help='File to output cooccurrences')
 
@@ -416,7 +429,7 @@ if __name__ == "__main__":
 
 	# Create wrapper that passes in the entity requirements
 	def selectSentencesWrapper(outFile, textInput, textSourceInfo):
-		selectSentences(entityRequirements, args.detectFusionGenes, args.detectMicroRNA, args.detectVariants, variantStopwords, args.detectAcronyms, outFile, textInput, textSourceInfo)
+		selectSentences(entityRequirements, args.detectFusionGenes, args.detectMicroRNA, args.detectVariants, variantStopwords, args.detectAcronyms, args.detectPolymorphisms, outFile, textInput, textSourceInfo)
 
 	print "Starting processing..."
 	startTime = time.time()
