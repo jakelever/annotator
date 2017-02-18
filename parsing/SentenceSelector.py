@@ -221,6 +221,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 
 			filtered = zip(locs,terms,termtypesAndids)
+			filtered = sorted(filtered)
 
 
 			# We'll attempt to merge terms (i.e. if a gene is referred to using two acronyms together)
@@ -232,7 +233,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 				(startB,endB),termsB,termTypesAndIDsB = filtered[i+1]
 				
 				# Check that the terms are beside each other or separated by a /,- or (
-				if startB == endA or (startB == (endA+1) and words[endA] in ['/','-','-LRB-']):
+				if startB == endA or (startB == (endA+1) and words[endA] in ['/','-','-LRB-','-RRB-']):
 					idsA,idsB = set(),set()
 
 					for termType, termIDs in termTypesAndIDsA:
@@ -245,12 +246,41 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 					idsIntersection = idsA.intersection(idsB)
 
 					# Detect if the second term is in brackets e.g. HER2 (ERBB2)
-					inBrackets = False
-					if startB == (endA+1) and words[endA] == '-LRB-' and words[endB] == '-RRB-':
-						inBrackets = True
+					firstTermInBrackets,secondTermInBrackets = False,False
+					if startB == (endA+1) and endB < len(words) and words[endA] == '-LRB-' and words[endB] == '-RRB-':
+						secondTermInBrackets = True
+					if startB == (endA+1) and startA > 0 and words[startA-1] == '-LRB-' and words[endA] == '-RRB-':
+						firstTermInBrackets = True
 
 					# The two terms share IDs so we're going to merge them
-					if len(idsIntersection) > 0:
+					idsShared = (len(idsIntersection) > 0)
+
+					# We'll also try to catch some special cases (where we can merge SNVs and Polymorphisms with some extra words
+					specialMerge = False
+					replacementID = None
+					if not idsShared:
+						specialCases = [('snv',['mutation','somatic mutation']), ('polymorphism',['polymorphism'])]
+
+						idsA_list,idsB_list = list(idsA),list(idsB)
+						termsA_flatten = " ".join(termsA).lower()
+						termsB_flatten = " ".join(termsB).lower()
+
+						for idPrefix,wordsToMerge in specialCases:
+							for wordToMerge in wordsToMerge:
+								# Is termA have an ID that starts with our target prefix (e.g. snv) and is the other term a special word (e.g. mutation)
+								# This would allow us to merge V600E mutation
+								if len(idsA_list) == 1 and idsA_list[0][1].startswith(idPrefix) and termsB_flatten == wordToMerge:
+									specialMerge = True
+									replacementID = termTypesAndIDsA
+									break
+								# Or other way around (e.g. somatic mutation (V600E)
+								elif len(idsB_list) == 1 and idsB_list[0][1].startswith(idPrefix) and termsA_flatten == wordToMerge:
+									specialMerge = True
+									replacementID = termTypesAndIDsB
+									break
+
+
+					if idsShared or specialMerge:
 						groupedByType = defaultdict(list)
 						for termType,termID in idsIntersection:
 							groupedByType[termType].append(termID)
@@ -258,9 +288,12 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 						locsToRemove.add((startA,endA))
 						locsToRemove.add((startB,endB))
 
-						if inBrackets:
+						if secondTermInBrackets:
 							thisLocs = (startA,endB+1)
 							thisTerms = tuple(words[startA:endB+1])
+						elif firstTermInBrackets:
+							thisLocs = (startA-1,endB)
+							thisTerms = tuple(words[startA-1:endB])
 						else:
 							thisLocs = (startA,endB)
 							thisTerms = tuple(words[startA:endB])
@@ -268,7 +301,10 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 
 						thisTermTypesAndIDs = [ (termType,sorted(termIDs)) for termType,termIDs in groupedByType.iteritems() ]
 
-						filtered.append((thisLocs,thisTerms,thisTermTypesAndIDs))
+						if specialMerge:
+							filtered.append((thisLocs,thisTerms,replacementID))
+						else:
+							filtered.append((thisLocs,thisTerms,thisTermTypesAndIDs))
 
 			# Now we have to remove the terms marked for deletion in the previous section
 			filtered = [ (locs,terms,termtypesAndids) for locs,terms,termtypesAndids in filtered if not locs in locsToRemove]
@@ -373,7 +409,7 @@ if __name__ == "__main__":
 					tmpWordlist[split[0]] = split[1].split('|')
 				else:
 					assert len(split) == 1, "Expecting one column for entire file (%s)" % wordlistFilename
-					tmpWordlist[i] = split[0].split('|')
+					tmpWordlist[str(i)] = split[0].split('|')
 
 		wordlists[termType] = tmpWordlist
 
