@@ -259,7 +259,7 @@ def selectSentences(entityRequirements, detectFusionGenes, detectMicroRNA, detec
 					specialMerge = False
 					replacementID = None
 					if not idsShared:
-						specialCases = [('snv',['mutation','somatic mutation','mutant','mutated']), ('polymorphism',['polymorphism'])]
+						specialCases = [('snv',['mutation','somatic mutation','mutant','mutated','variant']), ('polymorphism',['polymorphism','snp','variant'])]
 
 						idsA_list,idsB_list = list(idsA),list(idsB)
 						termsA_flatten = " ".join(termsA).lower()
