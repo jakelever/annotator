@@ -65,7 +65,6 @@ phenylalanine
 pro
 proline
 ras
-retinoic acid
 sec
 selenocysteine
 ser
