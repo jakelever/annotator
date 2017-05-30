@@ -117,6 +117,16 @@ function redirect($url)
 			unlink($tarArchive);
 		if (file_exists($gzArchive))
 			unlink($gzArchive);
+			
+			
+		$query = "SELECT filename FROM sentences ORDER BY filename";
+		$result = mysqli_query($con,$query);
+		$end = $start;
+		while ($row = mysqli_fetch_row($result))
+		{
+			$filename = $row[0];
+			touch("$directory/$filename.a2");
+		}
 		
 		$phar = new PharData($tarArchive, 0, null, Phar::TAR);
 		$phar->buildFromDirectory('tmp');
