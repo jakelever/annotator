@@ -67,7 +67,7 @@ function redirect($url)
 		$query = "SELECT MIN(sentenceid) FROM sentences";
 		$result = mysqli_query($con,$query);
 		$row = mysqli_fetch_row($result);
-		$start = $row[0];
+		$start = $row[0]-1;
 		
 		$query = "SELECT sentenceid FROM sentences WHERE sentenceid > $start ORDER BY sentenceid LIMIT $step";
 		$result = mysqli_query($con,$query);
@@ -79,7 +79,7 @@ function redirect($url)
 		#$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid ORDER BY s.sentenceid LIMIT $step";
 		
 		#$end = $start + $step;
-		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid >= $start AND s.sentenceid < $end ORDER BY s.sentenceid";
+		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid > $start AND s.sentenceid <= $end ORDER BY s.sentenceid";
 		
 		if (is_dir('tmp'))
 			rrmdir('tmp');
@@ -100,7 +100,7 @@ function redirect($url)
 		
 		#$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid > $start ORDER BY s.sentenceid LIMIT $step";
 		#$end = $start + $step;
-		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid >= $start AND s.sentenceid < $end ORDER BY s.sentenceid";
+		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid > $start AND s.sentenceid <= $end ORDER BY s.sentenceid";
 		
 	}
 	
@@ -162,7 +162,7 @@ function redirect($url)
 				$outData[$filename][] = $line;
 			}
 		}
-		$nextstart = $sentenceid+1;
+		$nextstart = $sentenceid;
 		
 		foreach ($outData as $filename => $lines)
 		{
