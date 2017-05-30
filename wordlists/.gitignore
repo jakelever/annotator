@@ -1,0 +1,8 @@
+*.combined.txt
+hp.obo
+wikidata.json
+terms_cancer.txt
+terms_drugs.txt
+terms_drugs.wikidata.txt
+terms_genes.txt
+terms_phenotype.txt
