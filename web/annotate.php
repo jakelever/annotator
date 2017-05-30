@@ -109,6 +109,17 @@
 		$content = implode('', $contentArray);
 	}
 	
+	# Let's get some numbers for this sentence
+	$query = "SELECT COUNT(*) as count FROM tagsetinfos tsi WHERE tsi.sentenceid=$sentenceid";
+	$result = mysqli_query($con,$query);
+	$row = mysqli_fetch_array($result);
+	$totalForSentence = $row['count'];
+	
+	$query = "SELECT COUNT(*) as count FROM tagsetinfos tsi WHERE tsi.sentenceid=$sentenceid AND tsi.tagsetid IN (SELECT tagsetid FROM annotations)";
+	$result = mysqli_query($con,$query);
+	$row = mysqli_fetch_array($result);
+	$currentForSentence = $row['count']+1;
+	
 	/*$contentArray = array();
 	preg_match_all('/./u', $content, $contentArray);
 	$contentArray = $contentArray[0];
@@ -202,7 +213,7 @@
 		?>
 
         <!-- <h1>Sentence Annotation</h1> -->
-        <p>Please read the following sentence and annotate with appropriate cancer/gene relationship. Already tagged <?php print $annotatedsentencecount; ?> sentences.</p>
+        <p>Please read the following sentence and annotate with appropriate cancer/gene relationship. Already tagged <?php print $annotatedsentencecount; ?> sentences. This is <?php echo $currentForSentence.'/'.$totalForSentence; ?> for this sentence.</p>
         <div class="panel panel-default">
           <div class="panel-body">
             <?php echo $content; ?>
