@@ -1,10 +1,25 @@
 <?php 
+	
+function rrmdir($dir) { 
+   if (is_dir($dir)) { 
+     $objects = scandir($dir); 
+     foreach ($objects as $object) { 
+       if ($object != "." && $object != "..") { 
+         if (is_dir($dir."/".$object))
+           rrmdir($dir."/".$object);
+         else
+           unlink($dir."/".$object); 
+       } 
+     }
+     rmdir($dir); 
+   } 
+}
 	include 'dbopen.php';
 	
-	$step = 100;
+	$step = 50;
 	
 	$basename = 'export';
-	$directory = 'output';
+	$directory = 'tmp/output';
 	
 	$tarArchive = "$basename.tar";
 	$gzArchive = "$basename.tar.gz";
@@ -16,32 +31,65 @@
 	
 		$message = "Starting export...";
 	
-		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid ORDER BY s.sentenceid LIMIT $step";
+		$query = "SELECT MIN(sentenceid) FROM sentences";
+		$result = mysqli_query($con,$query);
+		$row = mysqli_fetch_row($result);
+		$start = $row[0];
 		
-		if (file_exists($tarArchive))
-			unlink($tarArchive);
+		$query = "SELECT sentenceid FROM sentences WHERE sentenceid > $start ORDER BY sentenceid LIMIT $step";
+		$result = mysqli_query($con,$query);
+		$end = $start;
+		while ($row = mysqli_fetch_row($result))
+			$end = $row[0];
+		
+		#$end = $row[0];
+		#$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid ORDER BY s.sentenceid LIMIT $step";
+		
+		#$end = $start + $step;
+		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid >= $start AND s.sentenceid < $end ORDER BY s.sentenceid";
+		
+		if (is_dir('tmp'))
+			rrmdir('tmp');
+		mkdir($directory,0777,true);
 	}
 	else 
 	{
 		$start = intval($_GET['start']);
 		$message = "Exported $start files...";
 		
-		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid > $start ORDER BY s.sentenceid LIMIT $step";
+		$query = "SELECT sentenceid FROM sentences WHERE sentenceid > $start ORDER BY sentenceid LIMIT $step";
+		$result = mysqli_query($con,$query);
+		$end = $start;
+		while ($row = mysqli_fetch_row($result))
+			$end = $row[0];
+		
+		#$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid > $start ORDER BY s.sentenceid LIMIT $step";
+		#$end = $start + $step;
+		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid >= $start AND s.sentenceid < $end ORDER BY s.sentenceid";
 		
 	}
-	//print "<p>$query</p>";
-	$result = mysqli_query($con,$query);
 	
-	$phar = new PharData($tarArchive, 0, null, Phar::TAR);
+	#print "<p>$query</p>";
+	$result = mysqli_query($con,$query);
+	#exit(1);
+	
 	
 	$rowCount = mysqli_num_rows($result);
 	if ($rowCount==0)
 	{
-		// We're done
-		
+		if (file_exists($tarArchive))
+			unlink($tarArchive);
 		if (file_exists($gzArchive))
 			unlink($gzArchive);
+		
+		$phar = new PharData($tarArchive, 0, null, Phar::TAR);
+		$phar->buildFromDirectory('tmp');
+		// We're done
+		
 		$phar->compress(Phar::GZ); # Creates archive.tar.gz
+		
+		if (is_dir('tmp'))
+			rrmdir('tmp');
 		
 		header("Location: $gzArchive");
 		exit(0);
@@ -75,20 +123,21 @@
 			$outData[$filename][] = $line;
 		}
 	}
-	$maxsentenceid = $sentenceid;
+	$nextstart = $sentenceid+1;
 	
 	foreach ($outData as $filename => $lines)
 	{
 		$fileData = implode("",$lines);
-		$phar->addFromString("$directory/$filename.a2",$fileData);
+		#$phar->addFromString("$directory/$filename.a2",$fileData);
+		file_put_contents("$directory/$filename.a2",$fileData);
 	}
 	
 	#header("Location: exportToST.php?start=$maxsentenceid");
 	
 	if ($filter)
-		$redirectURL = "exportToST.php?filter&start=$maxsentenceid";
+		$redirectURL = "exportToST.php?filter&start=$nextatart";
 	else
-		$redirectURL = "exportToST.php?start=$maxsentenceid";
+		$redirectURL = "exportToST.php?start=$nextstart";
 		
 	
 	function redirect($url)
