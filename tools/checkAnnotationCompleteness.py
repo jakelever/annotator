@@ -18,10 +18,11 @@ if __name__ == '__main__':
 		relType = r.split(',')
 		relTypes.append(relType)
 
-	entityInfo = defaultdict(dict)
+	entityInfo = {}
 	for a1File in os.listdir(args.a1Dir):
 		if a1File.endswith('.a1'):
 			basename = a1File.replace('.a1','')
+			entityInfo[basename] = {}
 			joinedPath = os.path.join(args.a1Dir,a1File)
 			with open(joinedPath) as f:
 				for line in f:
@@ -31,10 +32,11 @@ if __name__ == '__main__':
 					eLocs = (int(split[2]),int(split[3]))
 					entityInfo[basename][eID] = (eType,eLocs)
 
-	relInfo = defaultdict(dict)	
+	relInfo = {}
 	for a2File in os.listdir(args.a2Dir):
 		if a2File.endswith('.a2'):
 			basename = a2File.replace('.a2','')
+			relInfo[basename] = {}
 			joinedPath = os.path.join(args.a2Dir,a2File)
 			with open(joinedPath) as f:
 				for line in f:
