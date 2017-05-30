@@ -6,7 +6,7 @@
     
 	$selectList = "tsi.tagsetid as tagsetid, s.sentenceid as sentenceid, s.text as sentencetext, tsi.description as tagsetdescription, s.pmid as sentencepmid, s.pmcid as sentencepmcid";
 	
-	$query = "SELECT $selectList FROM tagsetinfos tsi, sentences s WHERE tsi.tagsetid IN (SELECT tagsetid FROM annotations) AND tsi.sentenceid = s.sentenceid";
+	$query = "SELECT $selectList,GROUP_CONCAT(DISTINCT(at.type)) AS annotated FROM tagsetinfos tsi, sentences s, annotations a, annotationtypes at WHERE tsi.tagsetid IN (SELECT tagsetid FROM annotations) AND tsi.sentenceid = s.sentenceid AND a.tagsetid=tsi.tagsetid AND a.annotationtypeid=at.annotationtypeid GROUP BY s.sentenceid ORDER BY s.sentenceid,at.type";
 	
 	//echo "<p>$query</p>";
     $result = mysqli_query($con,$query);
@@ -102,17 +102,8 @@
 					$sentenceid = $row['sentenceid'];
 					$tagsetid = $row['tagsetid'];
 					$sentencetext = $row['sentencetext'];
-					
-					
-                    $query2 = "SELECT at.type as type FROM annotationtypes at, annotations a WHERE a.tagsetid=$tagsetid AND a.annotationtypeid=at.annotationtypeid";
-                    $result2 = mysqli_query($con,$query2);
-                    $annotations = [];
-                    while ($row2 = mysqli_fetch_row($result2)) {
-						$annotations[] = $row2[0];
-                    }
-					
-					$annotationText = implode(',',$annotations);
-				
+					$annotationText = $row['annotated'];
+			
 					echo "<td>".$row['tagsetid']."</td>\n";
 					echo "<td>".$row['tagsetdescription']."</td>\n";
 					echo "<td>".$annotationText."</td>\n";
