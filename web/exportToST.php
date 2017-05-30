@@ -1,7 +1,7 @@
 <?php 
 	include 'dbopen.php';
 	
-	$step = 100;
+	$step = 50;
 	
 	$basename = 'export';
 	$directory = 'output';
@@ -16,7 +16,22 @@
 	
 		$message = "Starting export...";
 	
-		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid ORDER BY s.sentenceid LIMIT $step";
+		$query = "SELECT MIN(sentenceid) FROM sentences";
+		$result = mysqli_query($con,$query);
+		$row = mysqli_fetch_row($result);
+		$start = $row[0];
+		
+		$query = "SELECT sentenceid FROM sentences WHERE sentenceid > $start ORDER BY sentenceid LIMIT $step";
+		$result = mysqli_query($con,$query);
+		$end = $start;
+		while ($row = mysqli_fetch_row($result))
+			$end = $row[0];
+		
+		#$end = $row[0];
+		#$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid ORDER BY s.sentenceid LIMIT $step";
+		
+		#$end = $start + $step;
+		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid >= $start AND s.sentenceid < $end ORDER BY s.sentenceid";
 		
 		if (file_exists($tarArchive))
 			unlink($tarArchive);
@@ -26,11 +41,21 @@
 		$start = intval($_GET['start']);
 		$message = "Exported $start files...";
 		
-		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid > $start ORDER BY s.sentenceid LIMIT $step";
+		$query = "SELECT sentenceid FROM sentences WHERE sentenceid > $start ORDER BY sentenceid LIMIT $step";
+		$result = mysqli_query($con,$query);
+		$end = $start;
+		while ($row = mysqli_fetch_row($result))
+			$end = $row[0];
+		
+		#$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid > $start ORDER BY s.sentenceid LIMIT $step";
+		#$end = $start + $step;
+		$query = "SELECT at.type as annotationtype, tsi.a2output as a2output, s.filename as filename, s.sentenceid as sentenceid FROM annotations a, annotationtypes at, tagsetinfos tsi, sentences s WHERE a.annotationtypeid=at.annotationtypeid AND a.tagsetid=tsi.tagsetid AND s.sentenceid=tsi.sentenceid AND s.sentenceid >= $start AND s.sentenceid < $end ORDER BY s.sentenceid";
 		
 	}
-	//print "<p>$query</p>";
+	
+	#print "<p>$query</p>";
 	$result = mysqli_query($con,$query);
+	#exit(1);
 	
 	$phar = new PharData($tarArchive, 0, null, Phar::TAR);
 	
@@ -75,7 +100,7 @@
 			$outData[$filename][] = $line;
 		}
 	}
-	$maxsentenceid = $sentenceid;
+	$nextstart = $sentenceid+1;
 	
 	foreach ($outData as $filename => $lines)
 	{
@@ -86,9 +111,9 @@
 	#header("Location: exportToST.php?start=$maxsentenceid");
 	
 	if ($filter)
-		$redirectURL = "exportToST.php?filter&start=$maxsentenceid";
+		$redirectURL = "exportToST.php?filter&start=$nextatart";
 	else
-		$redirectURL = "exportToST.php?start=$maxsentenceid";
+		$redirectURL = "exportToST.php?start=$nextstart";
 		
 	
 	function redirect($url)
