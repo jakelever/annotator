@@ -14,6 +14,39 @@ function rrmdir($dir) {
      rmdir($dir); 
    } 
 }
+
+function countFiles($dir) {
+	$fileCount = 0;
+	#$objects = scandir($dir); 
+	#foreach ($objects as $object)
+	$dir_iterator = new RecursiveDirectoryIterator($dir);
+	$iterator = new RecursiveIteratorIterator($dir_iterator, RecursiveIteratorIterator::SELF_FIRST);
+	foreach ($iterator as $object)
+		if (is_file($object))
+			$fileCount++;
+			
+	return $fileCount;
+}
+
+
+function showSuccess($message)
+{
+	$escaped = addslashes(htmlspecialchars($message));
+	$errorJS = "<script>\n";
+	$errorJS .= "document.getElementById('feedback').src='success.jpg';\n";
+	$errorJS .= "document.getElementById('text').innerHTML='$escaped';\n";
+	$errorJS .= "document.getElementById('button').style='display:block;'\n";
+	$errorJS .= "</script>\n";
+	echo $errorJS;
+}
+
+function redirect($url)
+{
+	$redirectJS = "<script>setTimeout(function() {  window.location.href = '$url'; }, 1000); </script>\n";
+	echo $redirectJS;
+}
+	
+
 	include 'dbopen.php';
 	
 	$step = 50;
@@ -54,8 +87,10 @@ function rrmdir($dir) {
 	}
 	else 
 	{
+		$fileCount = countFiles($directory);
+	
 		$start = intval($_GET['start']);
-		$message = "Exported $start files...";
+		$message = "Exported $fileCount files...";
 		
 		$query = "SELECT sentenceid FROM sentences WHERE sentenceid > $start ORDER BY sentenceid LIMIT $step";
 		$result = mysqli_query($con,$query);
@@ -73,6 +108,7 @@ function rrmdir($dir) {
 	$result = mysqli_query($con,$query);
 	#exit(1);
 	
+	$done = False;
 	
 	$rowCount = mysqli_num_rows($result);
 	if ($rowCount==0)
@@ -90,60 +126,59 @@ function rrmdir($dir) {
 		
 		if (is_dir('tmp'))
 			rrmdir('tmp');
+			
+		$message = "DONE";
 		
-		header("Location: $gzArchive");
-		exit(0);
+		$done = True;
 	}
 	
 	
 	//$phar->addEmptyDir($directory);
 	
-	$outData = [];
-	
-	while ($row = mysqli_fetch_array($result))
+	if (!$done)
 	{
-		$annotationtype = $row['annotationtype'];
-		$a2output = $row['a2output'];
-		$filename = $row['filename'];
-		$sentenceid = $row['sentenceid'];
+		$outData = [];
 		
-		if (!array_key_exists($filename,$outData))
-			$outData[$filename] = [];
-		
-		if (!$filter || $annotationtype != 'None')
+		while ($row = mysqli_fetch_array($result))
 		{
-			$eventID = 1;
-			if (array_key_exists($filename,$outData))
-				$eventID = count($outData[$filename])+1;
-			$nospacetype = str_replace(" ","_",$annotationtype);
-			$line = "E$eventID\t$nospacetype $a2output\n";
-			//print "<p>$line</p>";
-			//file_put_contents("phar://./$basename.phar/$directory/$filename.a2", $line);
-			//$phar->addFromString("$directory/$filename.a2",$line);
-			$outData[$filename][] = $line;
+			$annotationtype = $row['annotationtype'];
+			$a2output = $row['a2output'];
+			$filename = $row['filename'];
+			$sentenceid = $row['sentenceid'];
+			
+			if (!array_key_exists($filename,$outData))
+				$outData[$filename] = [];
+			
+			if (!$filter || $annotationtype != 'None')
+			{
+				$eventID = 1;
+				if (array_key_exists($filename,$outData))
+					$eventID = count($outData[$filename])+1;
+				$nospacetype = str_replace(" ","_",$annotationtype);
+				$line = "E$eventID\t$nospacetype $a2output\n";
+				//print "<p>$line</p>";
+				//file_put_contents("phar://./$basename.phar/$directory/$filename.a2", $line);
+				//$phar->addFromString("$directory/$filename.a2",$line);
+				$outData[$filename][] = $line;
+			}
 		}
-	}
-	$nextstart = $sentenceid+1;
-	
-	foreach ($outData as $filename => $lines)
-	{
-		$fileData = implode("",$lines);
-		#$phar->addFromString("$directory/$filename.a2",$fileData);
-		file_put_contents("$directory/$filename.a2",$fileData);
-	}
-	
-	#header("Location: exportToST.php?start=$maxsentenceid");
-	
-	if ($filter)
-		$redirectURL = "exportToST.php?filter&start=$nextatart";
-	else
-		$redirectURL = "exportToST.php?start=$nextstart";
+		$nextstart = $sentenceid+1;
 		
-	
-	function redirect($url)
-	{
-		$redirectJS = "<script>setTimeout(function() {  window.location.href = '$url'; }, 1000); </script>";
-		echo $redirectJS;
+		foreach ($outData as $filename => $lines)
+		{
+			$fileData = implode("",$lines);
+			#$phar->addFromString("$directory/$filename.a2",$fileData);
+			file_put_contents("$directory/$filename.a2",$fileData);
+		}
+		
+		#header("Location: exportToST.php?start=$maxsentenceid");
+		
+		if ($filter)
+			$redirectURL = "exportToST.php?filter&start=$nextatart";
+		else
+			$redirectURL = "exportToST.php?start=$nextstart";
+			
+		
 	}
 	
 	//echo("Location: exportToST.php?start=$maxsentenceid");
@@ -163,10 +198,6 @@ function rrmdir($dir) {
 	}
 
 	</style>
-
-<?php
-	redirect($redirectURL);
-?>
 	
 </head>
 
@@ -178,6 +209,20 @@ function rrmdir($dir) {
 	<p><div id="button" style="display:none;"><button class="btn btn-danger" onclick="location.href='admin.php';">Back</button></div></p>
 </div>
 
+
+<?php
+	if (!$done)
+	{
+		redirect($redirectURL);
+	}
+	else
+	{
+		showSuccess("Export complete");
+		redirect($gzArchive);
+	}
+		//header("Location: $gzArchive");
+		//exit(0);
+?>
 
 </body>
 </html>
