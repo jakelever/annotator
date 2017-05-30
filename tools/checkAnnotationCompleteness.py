@@ -48,6 +48,10 @@ if __name__ == '__main__':
 
 					relInfo[basename][relID] = (relType,relArgsDict)
 
+	unexpectedFiles = [ f for f in relInfo.keys() if f not in entityInfo.keys() ]
+	missingFiles = [ f for f in entityInfo.keys() if f not in relInfo.keys() ]
+	assert len(missingFiles) == 0, "Missing the following files: %s)" % str(missingFiles)
+	assert len(unexpectedFiles) == 0, "Did not expect the following files: %s)" % str(unexpectedFiles)
 	assert set(entityInfo.keys()) == set(relInfo.keys())
 
 	for basename in sorted(entityInfo.keys()):
