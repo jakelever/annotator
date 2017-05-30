@@ -80,7 +80,7 @@ CREATE TABLE IF NOT EXISTS `sentences` (
 DROP TABLE IF EXISTS `tags`;
 CREATE TABLE IF NOT EXISTS `tags` (
 `tagid` int(11) NOT NULL,
-  `type` enum('cancer','gene','mutation','') NOT NULL,
+  `type` varchar(30) NOT NULL,
   `startpos` int(11) NOT NULL,
   `endpos` int(11) NOT NULL,
   `text` text NOT NULL,
