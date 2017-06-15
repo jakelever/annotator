@@ -40,6 +40,7 @@
 		}
 	}
 	
+	$sentenceid = -1;
 	if ($tagsetid > -1)
 	{
 		$query = "SELECT s.sentenceid as sentenceid, s.text as sentencetext, t.text as tagtext, s.pmid as sentencepmid, s.pmcid as sentencepmcid, t.startpos as startpos, t.endpos as endpos, t.tagid as tagid, ts.patternindex as patternindex, p.description as patterndescription, tsi.description as tagsetdescription FROM sentences s, tagsets ts, tags t, patterns p, tagsetinfos tsi WHERE tsi.sentenceid = s.sentenceid AND ts.tagid = t.tagid AND ts.tagsetid=tsi.tagsetid AND tsi.patternid = p.patternid AND ts.tagsetid='$tagsetid' ORDER BY ts.patternindex";
@@ -54,7 +55,6 @@
 		$theseEndPos = [];
 		
 		$content = '';
-		$sentenceid = -1;
 		$tagsetdescription = '';
 		while ($row = mysqli_fetch_array($result))
 		{
