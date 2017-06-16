@@ -121,6 +121,8 @@ $htaccessExists = (file_exists('.htaccess') && file_exists('.htpasswd'));
         </div>
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
+            <li><a href="annotations_view.php">View Annotations</a></li>
+            <li><a href="annotate.php">New Annotation</a></li>
             <li class="active"><a href="admin.php">Admin</a></li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
