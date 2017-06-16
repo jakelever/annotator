@@ -131,10 +131,10 @@ $htaccessExists = (file_exists('.htaccess') && file_exists('.htpasswd'));
       <!-- Main component for a primary marketing message or call to action -->
       <div class="jumbotron">
 
-        <!-- <h1>Sentence Annotation</h1> -->
+		<h1>Admin Settings</h1>
+		<p>Use the controls below to setup the connection to the database, upload data to be annotated and download annotations.</p>
+		
 		<form action="setup_db.php" method="POST">
-			<h1>Database Connection</h1>
-			<p>Use the controls below to setup the connection to the database</p>
 			<div class="panel panel-default">
 			  <div class="panel-body">
 				<?php
@@ -167,6 +167,16 @@ $htaccessExists = (file_exists('.htaccess') && file_exists('.htpasswd'));
 						<td><button type="submit" class="btn btn-danger">Setup Database</button></td>
 					</td>
 				</table>
+			  </div>
+			</div>
+		</form>
+		
+		<form action="reset_db.php" method="POST">
+			<div class="panel panel-default">
+			  <div class="panel-body">
+				<h2>Reset Database</h2>
+				<p>DANGER: This will wipe the contents of the database (if a connection has already been set up).</p>
+				<button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you would reset the database?');">Reset Database</button>
 			  </div>
 			</div>
 		</form>
