@@ -44,7 +44,7 @@
 
 	$htaccess = [];
 	$htaccess[] = "AuthType Basic";
-	$htaccess[] = "AuthName \"Insight\"";
+	$htaccess[] = "AuthName \"Annotator - $username\"";
 	$htaccess[] = "AuthUserFile $here/.htpasswd";
 	$htaccess[] = "Require valid-user";
 	file_put_contents('.htaccess',implode(PHP_EOL,$htaccess));
