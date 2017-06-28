@@ -217,7 +217,7 @@
         <div class="panel panel-default">
           <div class="panel-body">
             <?php echo $content; ?>
-            <a href="<?php echo $pubmedlink; ?>">(pubmed)</a>
+            <!-- <a href="<?php echo $pubmedlink; ?>">(pubmed)</a> -->
           </div>
         </div>
 		
