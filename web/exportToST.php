@@ -184,7 +184,7 @@ function redirect($url)
 		#header("Location: exportToST.php?start=$maxsentenceid");
 		
 		if ($filter)
-			$redirectURL = "exportToST.php?filter&start=$nextatart";
+			$redirectURL = "exportToST.php?filter&start=$nextstart";
 		else
 			$redirectURL = "exportToST.php?start=$nextstart";
 			
