@@ -25,7 +25,7 @@ function mvdir($hereDir,$thereDir)
 		if (is_dir($therePath))
 		{
 			$herePath = str_replace($hereDir,$thereDir,$therePath);
-			if (is_dir($herePath))
+			if (is_dir($herePath) || $herePath == './..')
 			{
 				echo "Skipping: $herePath\n";
 				continue;
@@ -81,6 +81,8 @@ $dirToCopy='unzipped/annotator-master/web';
 mvdir($dirToCopy,'.');
 
 rrmdir('unzipped');
+
+echo "Done\n";
 
 ?>
 </pre>
