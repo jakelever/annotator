@@ -51,7 +51,12 @@ function redirect($url)
 	
 	$step = 50;
 	
-	$basename = 'export';
+	# Change the basename of the output file to be the URL of this directory (with slashes changed to underscores)
+	$urlHere = $_SERVER['SERVER_NAME']. $_SERVER['REQUEST_URI'];
+	$basename = preg_replace("/(.*)\/([^\/]*)/","$1",$urlHere);
+	$basename = str_replace(".","_",$basename);
+	$basename = str_replace("/","_",$basename);
+	
 	$directory = 'tmp/output';
 	
 	$tarArchive = "$basename.tar";
