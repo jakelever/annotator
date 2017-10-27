@@ -1,5 +1,5 @@
 <?php 
-	
+
 function rrmdir($dir) { 
    if (is_dir($dir)) { 
      $objects = scandir($dir); 
@@ -132,7 +132,14 @@ function redirect($url)
 		$phar->buildFromDirectory('tmp');
 		// We're done
 		
-		$phar->compress(Phar::GZ); # Creates archive.tar.gz
+		try {
+			$phar->compress(Phar::GZ); # Creates archive.tar.gz
+		} catch (Exception $e) {
+			if (!file_exists($gzArchive) || filesize($gzArchive) == 0)
+			{
+				throw new RuntimeException( $e->getMessage() );
+			}
+		}
 		
 		if (is_dir('tmp'))
 			rrmdir('tmp');
