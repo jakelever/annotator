@@ -4,6 +4,7 @@ This script is used to build a word-list of relevant gene terms from the HUGO ge
 import argparse
 import sys
 import codecs
+from collections import defaultdict
 
 def cleanupQuotes(text):
 	"""
@@ -20,16 +21,66 @@ def cleanupQuotes(text):
 	else:
 	 	return text
 
+def loadHGNCToUMLSID(filename):
+	"""
+	Loads the UMLS metathesaurus and extracts mappings from Hugo GeneIDs to Metathesaurus IDs
+
+	Args:
+		filename (str): Filename of UMLS Concept file (MRCONSO.RRF)
+
+	Returns:
+		Dictionary where each key (CUID) points to a list of strings (terms)
+	"""
+	mapping = {}
+	with codecs.open(filename,'r','utf8') as f:
+		for line in f:
+			split = line.split('|')
+			cuid = split[0]
+			externalID = split[13]
+			if externalID.startswith('HGNC:'):
+				assert not externalID in mapping or mapping[externalID] == cuid, "%s maps to %s and %s" % (externalID,cuid,mapping[externalID])
+				mapping[externalID] = cuid
+	return mapping
+	
+
+def loadMetathesaurus(filename):
+	"""
+	Loads the UMLS metathesaurus into a dictionary where CUID relates to a set of terms. Only English terms are included
+
+	Args:
+		filename (str): Filename of UMLS Concept file (MRCONSO.RRF)
+
+	Returns:
+		Dictionary where each key (CUID) points to a list of strings (terms)
+	"""
+	meta = defaultdict(list)
+	with codecs.open(filename,'r','utf8') as f:
+		for line in f:
+			split = line.split('|')
+			cuid = split[0]
+			lang = split[1]
+			term = split[14]
+			if lang != 'ENG':
+				continue
+			meta[cuid].append(term)
+	return meta
+
 if __name__ == '__main__':
 
 	parser = argparse.ArgumentParser(description='Generate term list from NCBI gene resource')
 	parser.add_argument('--ncbiGeneInfoFile', required=True, type=str, help='Path to NCBI Gene Info file')
+	parser.add_argument('--umlsConceptFile', required=True, type=str, help='Path on the MRCONSO.RRF file in UMLS metathesaurus')
 	parser.add_argument('--geneStopwords',required=True,type=str,help='Stopword file for genes')
 	parser.add_argument('--outFile', required=True, type=str, help='Path to output wordlist file')
 	args = parser.parse_args()
 
 	genes = []
 
+	print "Loading metathesaurus..."
+	hugoToCUID = loadHGNCToUMLSID(args.umlsConceptFile)
+	metathesaurus = loadMetathesaurus(args.umlsConceptFile)
+
+	print "Loading stopwords..."
 	with codecs.open(args.geneStopwords,'r','utf8') as f:
 		geneStopwords = [ line.strip().lower() for line in f ]
 		geneStopwords = set(geneStopwords)
@@ -62,11 +113,31 @@ if __name__ == '__main__':
 					print "Skipping %s as no HUGO id is found" % symbol
 					continue
 
+				# Gather up the names from the NCBI file
 				allNames = [symbol,nomenclature_symbol,nomenclature_full] + synonyms
+
+				# Add in names from the Metathesaurus
+				metathesaurusTerms = []
+				if hugo_id in hugoToCUID:
+					cuid = hugoToCUID[hugo_id]
+					metathesaurusTerms = metathesaurus[cuid]
+				allNames = allNames + metathesaurusTerms
+
+
 				allNames = [ x.strip().lower() for x in allNames ]
 				allNames = [ x for x in allNames if x ]
 				allNames = [ x for x in allNames if x != '-' ]
 				allNames = [ cleanupQuotes(x) for x in allNames ]
+
+				# Try adding a few extra synonyms (by removing the final word gene, e.g. KRAS gene -> KRAS)
+				extraNames = []
+				for name in allNames:
+					if name.endswith(' gene'):
+						extraNames.append(name[:-len(' gene')])
+				allNames = allNames + extraNames
+				
+				# Remove instances with commas
+				allNames = [ x for x in allNames if not "," in x ]
 
 				# Remove any duplicates
 				noDuplicates = sorted(list(set(allNames)))
