@@ -186,7 +186,7 @@ if __name__ == '__main__':
 		mmterms = sorted(list(set(mmterms)))
 
 		if len(mmterms) > 0:
-			tmpterm = (term.id, u"|".join(mmterms))
+			tmpterm = (term.id, term.name, u"|".join(mmterms))
 			allterms.append(tmpterm)
 
 
@@ -195,8 +195,8 @@ if __name__ == '__main__':
 	
 	print("Outputting to file...")
 	with codecs.open(args.outFile,'w','utf8') as outF:
-		for termid, termtext in allterms:
-			line = u"%s\t%s\n" % (termid,termtext)
+		for termid, singleterm, termtext in allterms:
+			line = u"%s\t%s\t%s\n" % (termid,singleterm,termtext)
 			outF.write(line)
 
 	print("Successfully output to %s" % args.outFile)

@@ -126,15 +126,15 @@ if __name__ == '__main__':
 
 					numeric_id = int(hugo_id.replace('HGNC:',''))
 
-					gene = (numeric_id,hugo_id,noDuplicates)
+					gene = (numeric_id,hugo_id,symbol,noDuplicates)
 					genes.append(gene)
 
 	genes = sorted(genes)
 
 	with codecs.open(args.outFile,'w','utf8') as outF:
-		for _,hugo_id,synonyms in genes:
+		for _,hugo_id,singleName,synonyms in genes:
 			# Then output to the file
-			line = u"%s\t%s" % (hugo_id, u"|".join(synonyms))
+			line = u"%s\t%s\t%s" % (hugo_id, singleName, u"|".join(synonyms))
 			outF.write(line + "\n")
 
 	print("Successfully output to %s" % args.outFile)
