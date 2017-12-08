@@ -460,8 +460,8 @@ if __name__ == "__main__":
 				del lookup[key]
 
 	variantStopwords = set()
-	if args.variantsStopwordsFile:
-		with codecs.open(args.variantsStopwordsFile, "r", "utf-8") as f4:
+	if args.variantsStopwords:
+		with codecs.open(args.variantsStopwords, "r", "utf-8") as f4:
 			variantStopwords = [ line.strip() for line in f4 ]
 		variantStopwords = set(variantStopwords)
 
