@@ -41,7 +41,7 @@ if __name__ == '__main__':
 		for sentenceid,line in enumerate(inFile):
 			perc = 100.0 * sentenceid / float(totalLineCount)
 			if perc > nextPerc:
-				print "%.1f%%" % perc
+				print("%.1f%%" % perc)
 				nextPerc += 1.0
 
 
