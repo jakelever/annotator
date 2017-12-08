@@ -21,9 +21,9 @@ def cleanupQuotes(text):
 	else:
 	 	return text
 
-def loadHGNCToUMLSID(filename):
+def loadHGNCToUMLSTerms(filename):
 	"""
-	Loads the UMLS metathesaurus and extracts mappings from Hugo GeneIDs to Metathesaurus IDs
+	Loads the UMLS metathesaurus and extracts mappings from Hugo GeneIDs to UMLS terms
 
 	Args:
 		filename (str): Filename of UMLS Concept file (MRCONSO.RRF)
@@ -31,39 +31,20 @@ def loadHGNCToUMLSID(filename):
 	Returns:
 		Dictionary where each key (CUID) points to a list of strings (terms)
 	"""
-	mapping = {}
-	with codecs.open(filename,'r','utf8') as f:
-		for line in f:
-			split = line.split('|')
-			cuid = split[0]
-			externalID = split[13]
-			if externalID.startswith('HGNC:'):
-				assert not externalID in mapping or mapping[externalID] == cuid, "%s maps to %s and %s" % (externalID,cuid,mapping[externalID])
-				mapping[externalID] = cuid
-	return mapping
-	
-
-def loadMetathesaurus(filename):
-	"""
-	Loads the UMLS metathesaurus into a dictionary where CUID relates to a set of terms. Only English terms are included
-
-	Args:
-		filename (str): Filename of UMLS Concept file (MRCONSO.RRF)
-
-	Returns:
-		Dictionary where each key (CUID) points to a list of strings (terms)
-	"""
-	meta = defaultdict(list)
+	mapping = defaultdict(list)
 	with codecs.open(filename,'r','utf8') as f:
 		for line in f:
 			split = line.split('|')
 			cuid = split[0]
 			lang = split[1]
+			externalID = split[13]
 			term = split[14]
 			if lang != 'ENG':
 				continue
-			meta[cuid].append(term)
-	return meta
+
+			if externalID.startswith('HGNC:'):
+				mapping[externalID].append(term)
+	return mapping
 
 if __name__ == '__main__':
 
@@ -77,8 +58,7 @@ if __name__ == '__main__':
 	genes = []
 
 	print("Loading metathesaurus...")
-	hugoToCUID = loadHGNCToUMLSID(args.umlsConceptFile)
-	metathesaurus = loadMetathesaurus(args.umlsConceptFile)
+	hugoToMetathesaurus = loadHGNCToUMLSTerms(args.umlsConceptFile)
 
 	print("Loading stopwords...")
 	with codecs.open(args.geneStopwords,'r','utf8') as f:
@@ -118,11 +98,9 @@ if __name__ == '__main__':
 
 				# Add in names from the Metathesaurus
 				metathesaurusTerms = []
-				if hugo_id in hugoToCUID:
-					cuid = hugoToCUID[hugo_id]
-					metathesaurusTerms = metathesaurus[cuid]
+				if hugo_id in hugoToMetathesaurus:
+					metathesaurusTerms = hugoToMetathesaurus[hugo_id]
 				allNames = allNames + metathesaurusTerms
-
 
 				allNames = [ x.strip().lower() for x in allNames ]
 				allNames = [ x for x in allNames if x ]
