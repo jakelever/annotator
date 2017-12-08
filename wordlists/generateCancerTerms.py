@@ -142,19 +142,19 @@ if __name__ == '__main__':
 	parser.add_argument('--outFile', required=True, type=str, help='Path to output wordlist file')
 	args = parser.parse_args()
 
-	print "Loading metathesaurus..."
+	print("Loading metathesaurus...")
 	metathesaurus = loadMetathesaurus(args.umlsConceptFile)
 
-	print "Loading disease ontology..."
+	print("Loading disease ontology...")
 	ont = pronto.Ontology(args.diseaseOntologyFile)
 	cancerTerm = findTerm(ont,'cancer')
 
-	print "Loading cancer stopwords..."
+	print("Loading cancer stopwords...")
 	with codecs.open(args.cancerStopwords,'r','utf8') as f:
 		cancerstopwords = [ line.strip().lower() for line in f ]
 		cancerstopwords = set(cancerstopwords)
 
-	print "Processing..."
+	print("Processing...")
 	allterms = []
 	# Skip down to the children of the cancer term and then find all their descendents (recursive children)
 	for term in cancerTerm.children.rchildren():
@@ -191,15 +191,15 @@ if __name__ == '__main__':
 
 
 	allterms = sorted(allterms)
-	print "Generated %d terms" % len(allterms)
+	print("Generated %d terms" % len(allterms))
 	
-	print "Outputting to file..."
+	print("Outputting to file...")
 	with codecs.open(args.outFile,'w','utf8') as outF:
 		for termid, termtext in allterms:
 			line = u"%s\t%s\n" % (termid,termtext)
 			outF.write(line)
 
-	print "Successfully output to %s" % args.outFile
+	print("Successfully output to %s" % args.outFile)
 
 		
 

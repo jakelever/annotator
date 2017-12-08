@@ -76,16 +76,16 @@ if __name__ == '__main__':
 
 	genes = []
 
-	print "Loading metathesaurus..."
+	print("Loading metathesaurus...")
 	hugoToCUID = loadHGNCToUMLSID(args.umlsConceptFile)
 	metathesaurus = loadMetathesaurus(args.umlsConceptFile)
 
-	print "Loading stopwords..."
+	print("Loading stopwords...")
 	with codecs.open(args.geneStopwords,'r','utf8') as f:
 		geneStopwords = [ line.strip().lower() for line in f ]
 		geneStopwords = set(geneStopwords)
 
-	print "Processing"
+	print("Processing")
 	with codecs.open(args.ncbiGeneInfoFile,'r','utf8') as ncbiF:
 		for line in ncbiF:
 			split = line.rstrip('\n\r').split('\t')
@@ -110,7 +110,7 @@ if __name__ == '__main__':
 						hugo_id = dbXref[5:]
 
 				if hugo_id is None:
-					print "Skipping %s as no HUGO id is found" % symbol
+					print("Skipping %s as no HUGO id is found" % symbol)
 					continue
 
 				# Gather up the names from the NCBI file
@@ -159,7 +159,7 @@ if __name__ == '__main__':
 			line = u"%s\t%s" % (hugo_id, u"|".join(synonyms))
 			outF.write(line + "\n")
 
-	print "Successfully output to %s" % args.outFile
+	print("Successfully output to %s" % args.outFile)
 
 		
 
