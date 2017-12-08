@@ -1,11 +1,16 @@
 <?php	include 'dbopen.php';
 	
-   	$query = "SELECT annotationtypeid FROM annotationtypes WHERE type='None'";
+	$query = "SELECT type FROM annotationtypes ORDER BY annotationtypeid LIMIT 1";
+	$result = mysqli_query($con,$query);
+	$array = mysqli_fetch_array($result);
+	$defaultAnnotation = $array['type'];
+	
+   	$query = "SELECT annotationtypeid FROM annotationtypes WHERE type='$defaultAnnotation'";
 	#print "<p>$query</p>";
 	$result = mysqli_query($con,$query);
 	if (!$result || mysqli_num_rows($result) < 1)
 	{
-		echo "<b>ERROR: Cannot get annotationtypeid for None</b> SQL: $query";
+		echo "<b>ERROR: Cannot get annotationtypeid for $defaultAnnotation</b> SQL: $query";
 		exit(1);
 	}
 	$annotationtypeid = mysqli_fetch_row($result)[0];
@@ -25,7 +30,7 @@
 	$result = mysqli_query($con,$query);
 	if (!$result || mysqli_num_rows($result) < 1)
 	{
-		echo "<b>ERROR: Cannot get annotationtypeid for None</b> SQL: $query";
+		echo "<b>ERROR: Cannot get annotationtypeid for $defaultAnnotation</b> SQL: $query";
 		exit(1);
 	}
 	$sentenceid = mysqli_fetch_row($result)[0];
@@ -47,7 +52,7 @@
 		$result2 = mysqli_query($con,$query2);
 		if (!$result2)
 		{
-			echo "<b>ERROR: Unable to add NONE annotation</b> SQL: $query";
+			echo "<b>ERROR: Unable to add $defaultAnnotation annotation</b> SQL: $query";
 			exit(1);
 		}
 	}

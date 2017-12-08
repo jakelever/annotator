@@ -11,6 +11,11 @@
 		$annotationtypes[$row['annotationtypeid']] = $row['type'];
 	}
 	
+	$query = "SELECT type FROM annotationtypes ORDER BY annotationtypeid LIMIT 1";
+	$result = mysqli_query($con,$query);
+	$array = mysqli_fetch_array($result);
+	$defaultAnnotation = $array['type'];
+	
 	$query = "SELECT COUNT(DISTINCT sentenceid) as annotatedsentencecount FROM tagsetinfos WHERE tagsetid IN (SELECT tagsetid FROM annotations)";
 	$result = mysqli_query($con,$query);
 	$array = mysqli_fetch_array($result);
@@ -258,7 +263,7 @@
       <button type="submit" class="btn btn-success">&lt; Remove Annotations and Move to Previous Sentence</button>
       </form>
       <form role="form" action="nextsentence.php" method="GET">
-      <button type="submit" class="btn btn-success">Set None for Rest of Sentence &gt;</button>
+      <button type="submit" class="btn btn-success">Set <?php echo $defaultAnnotation; ?> for Rest of Sentence &gt;</button>
       </form>
 	  
 	  <?php
