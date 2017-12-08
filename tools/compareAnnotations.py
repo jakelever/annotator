@@ -40,15 +40,17 @@ def compareFiles(fileA,fileB,relationTypes=None):
 			FN += 1
 	return TP,FP,FN
 
-def compareDirs(dirA,dirB,relationTypes=None):
+def compareDirs(dirA,dirB,relationTypes=None,allowMissingFiles=False):
 	filesA = [ f for f in os.listdir(dirA) if f.endswith('.a2') ]
 	filesB = [ f for f in os.listdir(dirB) if f.endswith('.a2') ]
 
-	assert set(filesA) == set(filesB), 'Both annotation directories must have matching A2 filenames'
-	assert len(filesA) > 0, 'Directories must contain A2 files'
+	assert allowMissingFiles or set(filesA) == set(filesB), 'Both annotation directories must have matching A2 filenames'
+	assert len(filesA) > 0 and len(filesB) > 0, 'Directories must contain A2 files'
+
+	filesBoth = sorted(list(set(filesA).intersection(set(filesB))))
 
 	TPs,FPs,FNs = 0,0,0
-	for f in filesA:
+	for f in filesBoth:
 		TP,FP,FN = compareFiles(os.path.join(dirA,f),os.path.join(dirB,f),relationTypes)
 		miniF1 = 0.0
 		if (2*TP+FN+FP) != 0:
@@ -70,11 +72,12 @@ if __name__ == '__main__':
 	parser.add_argument('--dirA',type=str,required=True,help='Directory of first set of annotations')
 	parser.add_argument('--dirB',type=str,required=True,help='Directory of second set of annotations')
 	parser.add_argument('--relationTypes',type=str,required=True,help='Comma-delimited list of relation types to compare (allows filtering out of non-essential ones)')
+	parser.add_argument('--allowMissingFiles',action='store_true',help='Only do comparison on files that are matching (and allow missing files)')
 	args = parser.parse_args()
 
 	relationTypes = args.relationTypes.split(',')
 
-	TPs,FPs,FNs = compareDirs(args.dirA,args.dirB,relationTypes)
+	TPs,FPs,FNs = compareDirs(args.dirA,args.dirB,relationTypes,bool(args.allowMissingFiles))
 
 	print(TPs,FPs,FNs)
 
