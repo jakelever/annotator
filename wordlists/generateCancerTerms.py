@@ -139,6 +139,8 @@ if __name__ == '__main__':
 	parser.add_argument('--diseaseOntologyFile', required=True, type=str, help='Path to the Disease Ontology OBO file')
 	parser.add_argument('--cancerStopwords',required=True,type=str,help='File containing cancer terms to ignore')
 	parser.add_argument('--umlsConceptFile', required=True, type=str, help='Path on the MRCONSO.RRF file in UMLS metathesaurus')
+	parser.add_argument('--customAdditions', required=False, type=str, help='Some custom additions to the wordlist')
+	parser.add_argument('--customDeletions', required=False, type=str, help='Some custom deletions from the wordlist')
 	parser.add_argument('--outFile', required=True, type=str, help='Path to output wordlist file')
 	args = parser.parse_args()
 
@@ -153,6 +155,21 @@ if __name__ == '__main__':
 	with codecs.open(args.cancerStopwords,'r','utf8') as f:
 		cancerstopwords = [ line.strip().lower() for line in f ]
 		cancerstopwords = set(cancerstopwords)
+
+	customAdditions = defaultdict(list)
+	if args.customAdditions:
+		print("Loading additions...")
+		with codecs.open(args.customAdditions,'r','utf-8') as f:
+			for line in f:
+				termid,singleterm,terms = line.strip().split('\t')
+				customAdditions[termid] += terms.split('|')
+	customDeletions = defaultdict(list)
+	if args.customDeletions:
+		print("Loading deletions...")
+		with codecs.open(args.customDeletions,'r','utf-8') as f:
+			for line in f:
+				termid,singleterm,terms = line.strip().split('\t')
+				customDeletions[termid] += terms.split('|')
 
 	print("Processing...")
 	allterms = []
@@ -173,6 +190,9 @@ if __name__ == '__main__':
 		# Add synonyms in the Disease Ontology term
 		mmterms += getSynonyms(term)
 
+		# Add in custom additions
+		mmterms += customAdditions[term.id]
+
 		# Lowercase everything
 		mmterms = [ mmterm.lower() for mmterm in mmterms ]
 		
@@ -182,6 +202,9 @@ if __name__ == '__main__':
 		# Add extra spellings and plurals
 		mmterms = augmentTermList(mmterms)
 
+		# Remove custom deletions
+		mmterms = [ mmterm for mmterm in mmterms if not mmterm in customDeletions[term.id] ]
+
 		# Remove any duplicates and sort it
 		mmterms = sorted(list(set(mmterms)))
 
@@ -189,10 +212,24 @@ if __name__ == '__main__':
 			tmpterm = (term.id, term.name, u"|".join(mmterms))
 			allterms.append(tmpterm)
 
+	print("Post-filtering...")
+	mapping = defaultdict(list)
+	for termid, singleterm, termtext in allterms:
+		for term in termtext.split('|'):
+			mapping[term].append(singleterm)
+
+	filteredterms = []
+	for termid, singleterm, termtext in allterms:
+		if 'carcinoma' in singleterm:
+			terms = [ t for t in termtext.split('|') if not ('cancer' in t and len(mapping[t]) > 1) ]
+			termtext = "|".join(terms)
+		if termtext != '':
+			filteredterms.append( (termid, singleterm, termtext) )
+	allterms = filteredterms
 
 	allterms = sorted(allterms)
 	print("Generated %d terms" % len(allterms))
-	
+
 	print("Outputting to file...")
 	with codecs.open(args.outFile,'w','utf8') as outF:
 		for termid, singleterm, termtext in allterms:
