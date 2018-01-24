@@ -146,6 +146,7 @@ if __name__ == '__main__':
 
 	print("Loading metathesaurus...")
 	metathesaurus = loadMetathesaurus(args.umlsConceptFile)
+	metathesaurusMainTerm = { terms[0].lower():cuid for cuid,terms in metathesaurus.items() }
 
 	print("Loading disease ontology...")
 	ont = pronto.Ontology(args.diseaseOntologyFile)
@@ -177,6 +178,11 @@ if __name__ == '__main__':
 	for term in cancerTerm.children.rchildren():
 		# Get the CUIDs for this term
 		cuids = getCUIDs(term)
+
+		# Check for an exact match with a metathesaurus term
+		if term.name.lower() in metathesaurusMainTerm:
+			cuids.append(metathesaurusMainTerm[term.name.lower()])
+			cuids = sorted(list(set(cuids)))
 
 		# Get the English terms for the metathesaurus
 		mmterms = [ metathesaurus[cuid] for cuid in cuids ]
@@ -214,7 +220,11 @@ if __name__ == '__main__':
 
 	print("Post-filtering...")
 	mapping = defaultdict(list)
+	properNames = set()
 	for termid, singleterm, termtext in allterms:
+		properNames.add(singleterm)
+		properNames.add(singleterm+'s') # Deal with plurals
+
 		for term in termtext.split('|'):
 			mapping[term].append(singleterm)
 
@@ -223,6 +233,9 @@ if __name__ == '__main__':
 		if 'carcinoma' in singleterm:
 			terms = [ t for t in termtext.split('|') if not ('cancer' in t and len(mapping[t]) > 1) ]
 			termtext = "|".join(terms)
+
+		terms = [ t for t in terms if t==singleterm or not (t in properNames) ]
+
 		if termtext != '':
 			filteredterms.append( (termid, singleterm, termtext) )
 	allterms = filteredterms
