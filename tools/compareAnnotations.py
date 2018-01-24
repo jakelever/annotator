@@ -56,9 +56,9 @@ def compareDirs(dirA,dirB,relationTypes=None,allowMissingFiles=False):
 		if (2*TP+FN+FP) != 0:
 			miniF1 = (2*TP) / float(2*TP+FN+FP)
 		if (FP > 0 or FN > 0):
-			print "DIFFERENCE", f, miniF1
+			print("DIFFERENCE", f, miniF1)
 		else:
-		 	print "MATCHING", f, miniF1
+		 	print("MATCHING", f, miniF1)
 
 		TPs += TP
 		FPs += FP
@@ -85,6 +85,6 @@ if __name__ == '__main__':
 	recall = TPs / float(TPs+FNs)
 	f1score = 2 * (precision*recall) / (precision+recall)
 
-	print "Precision:", precision
-	print "Recall:", recall
-	print "F1_Score:", f1score
+	print("Precision:", precision)
+	print("Recall:", recall)
+	print("F1_Score:", f1score)

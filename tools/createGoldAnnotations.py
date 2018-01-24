@@ -56,11 +56,11 @@ def createGoldFile(fileA,fileB,fileC,outFile,relationTypes=None,addNone=False):
 		inC = r in relationsC
 
 		if inA and inB:
-			print "AGREEMENT in %s" % basename
+			print("AGREEMENT in %s" % basename)
 			# DirA and DirB have voted majority
 			goldSet.append(r)
 		else:
-			print "DISAGREEMENT in %s" % basename
+			print("DISAGREEMENT in %s" % basename)
 			assert hasFileC, "Disagreement exists between first two annotators, need third annotator to vote (%s)" % fileA
 			#if not hasFileC:
 				#print hasFileC
