@@ -41,6 +41,7 @@ phe
 pro
 promyelocytic leukemia
 psa
+ptc
 san
 scar
 ser
