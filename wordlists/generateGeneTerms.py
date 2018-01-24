@@ -52,6 +52,8 @@ if __name__ == '__main__':
 	parser.add_argument('--ncbiGeneInfoFile', required=True, type=str, help='Path to NCBI Gene Info file')
 	parser.add_argument('--umlsConceptFile', required=True, type=str, help='Path on the MRCONSO.RRF file in UMLS metathesaurus')
 	parser.add_argument('--geneStopwords',required=True,type=str,help='Stopword file for genes')
+	parser.add_argument('--customAdditions', required=False, type=str, help='Some custom additions to the wordlist')
+	parser.add_argument('--customDeletions', required=False, type=str, help='Some custom deletions from the wordlist')
 	parser.add_argument('--outFile', required=True, type=str, help='Path to output wordlist file')
 	args = parser.parse_args()
 
@@ -64,6 +66,21 @@ if __name__ == '__main__':
 	with codecs.open(args.geneStopwords,'r','utf8') as f:
 		geneStopwords = [ line.strip().lower() for line in f ]
 		geneStopwords = set(geneStopwords)
+
+	customAdditions = defaultdict(list)
+	if args.customAdditions:
+		print("Loading additions...")
+		with codecs.open(args.customAdditions,'r','utf-8') as f:
+			for line in f:
+				termid,singleterm,terms = line.strip().split('\t')
+				customAdditions[termid] += terms.split('|')
+	customDeletions = defaultdict(list)
+	if args.customDeletions:
+		print("Loading deletions...")
+		with codecs.open(args.customDeletions,'r','utf-8') as f:
+			for line in f:
+				termid,singleterm,terms = line.strip().split('\t')
+				customDeletions[termid] += terms.split('|')
 
 	print("Processing")
 	with codecs.open(args.ncbiGeneInfoFile,'r','utf8') as ncbiF:
@@ -102,6 +119,8 @@ if __name__ == '__main__':
 					metathesaurusTerms = hugoToMetathesaurus[hugo_id]
 				allNames = allNames + metathesaurusTerms
 
+				allNames += customAdditions[hugo_id]
+
 				allNames = [ x.strip().lower() for x in allNames ]
 				allNames = [ x for x in allNames if x ]
 				allNames = [ x for x in allNames if x != '-' ]
@@ -113,6 +132,8 @@ if __name__ == '__main__':
 					if name.endswith(' gene'):
 						extraNames.append(name[:-len(' gene')])
 				allNames = allNames + extraNames
+
+				allNames = [ x for x in allNames if not x in customDeletions[hugo_id] ]
 				
 				# Remove instances with commas
 				allNames = [ x for x in allNames if not "," in x ]
