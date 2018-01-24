@@ -1,0 +1,2 @@
+HGNC:3236	EGFR	egf receptor|egf-r|epidermal growth factor (egf) receptor|receptor for the epidermal growth factor|receptor for epidermal growth factor
+HGNC:3430	ERBB2	human epidermal growth factor receptor-2|epidermal growth factor receptor-2|epidermal growth factor receptor 2
