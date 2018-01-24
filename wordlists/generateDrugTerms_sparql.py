@@ -64,6 +64,7 @@ if __name__ == '__main__':
 			combined = aliases[k]
 			combined.add(mainterm[k])
 			combined = [ t for t in combined if not t in stopwords ]
+			combined = [ t for t in combined if len(t) > 3 ]
 			combined = sorted(combined)
 
 			shortID = k.split('/')[-1]
