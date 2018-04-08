@@ -12,6 +12,7 @@ crest
 ctx
 cys
 dbm
+dss
 emt
 fig
 genesis
@@ -20,6 +21,7 @@ glu
 gly
 hcc
 his
+igh
 ile
 led
 leu
@@ -51,5 +53,6 @@ traits
 trp
 tsa
 tyr
+utr
 val
 warts
