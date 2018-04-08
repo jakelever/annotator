@@ -30,6 +30,9 @@ def augmentTermList(terms):
 	# Filter out terms with a comma
 	terms = [ t for t in terms if not ',' in t ]
 
+	# Filter out terms with a semicolon
+	terms = [ t for t in terms if not ';' in t ]
+
 	# Filter out terms that start with "of "
 	terms = [ t for t in terms if not t.startswith('of ') ]
 	
@@ -102,13 +105,9 @@ def getSynonyms(term):
 		list of synonyms
 	"""
 	synonyms = []
-	if 'synonym' in term.other:
-		for s in term.other['synonym']:
-			if 'EXACT' in s:
-				pos = s.index('EXACT')
-				before = s[:pos].strip()
-				if before[0] == '"' and before[-1] == '"':
-					synonyms.append(before.strip('"'))
+	for s in term.synonyms:
+		if s.scope == 'EXACT':
+			synonyms.append(s.desc.lower())
 	return synonyms
 
 def loadMetathesaurus(filename):
@@ -184,6 +183,10 @@ if __name__ == '__main__':
 			cuids.append(metathesaurusMainTerm[term.name.lower()])
 			cuids = sorted(list(set(cuids)))
 
+		# Skip it if the main name is deemed unimportant
+		if term.name.lower() in cancerstopwords:
+			continue
+
 		# Get the English terms for the metathesaurus
 		mmterms = [ metathesaurus[cuid] for cuid in cuids ]
 
@@ -230,11 +233,12 @@ if __name__ == '__main__':
 
 	filteredterms = []
 	for termid, singleterm, termtext in allterms:
+		terms = termtext.split('|')
 		if 'carcinoma' in singleterm:
-			terms = [ t for t in termtext.split('|') if not ('cancer' in t and len(mapping[t]) > 1) ]
-			termtext = "|".join(terms)
+			terms = [ t for t in terms if not ('cancer' in t and len(mapping[t]) > 1) ]
 
 		terms = [ t for t in terms if t==singleterm or not (t in properNames) ]
+		termtext = "|".join(terms)
 
 		if termtext != '':
 			filteredterms.append( (termid, singleterm, termtext) )
