@@ -17,6 +17,8 @@ def runQuery(query):
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Tool to pull certain triple types from WikiData using SPARQL')
 	parser.add_argument('--drugStopwords',required=True,type=str,help='Stopword file for drugs')
+	parser.add_argument('--customAdditions', required=False, type=str, help='Some custom additions to the wordlist')
+	parser.add_argument('--customDeletions', required=False, type=str, help='Some custom deletions from the wordlist')
 	parser.add_argument('--outFile',type=str,required=True,help='File to output triples')
 	args = parser.parse_args()
 
@@ -26,6 +28,21 @@ if __name__ == '__main__':
 	with codecs.open(args.drugStopwords,'r','utf8') as f:
 		stopwords = [ line.strip().lower() for line in f ]
 		stopwords = set(stopwords)
+
+	customAdditions = defaultdict(list)
+	if args.customAdditions:
+		print("Loading additions...")
+		with codecs.open(args.customAdditions,'r','utf-8') as f:
+			for line in f:
+				termid,singleterm,terms = line.strip().split('\t')
+				customAdditions[termid] += terms.split('|')
+	customDeletions = defaultdict(list)
+	if args.customDeletions:
+		print("Loading deletions...")
+		with codecs.open(args.customDeletions,'r','utf-8') as f:
+			for line in f:
+				termid,singleterm,terms = line.strip().split('\t')
+				customDeletions[termid] += terms.split('|')
 
 	print("Gathering drugs and aliases from Wikidata")
 
@@ -65,9 +82,17 @@ if __name__ == '__main__':
 			combined.add(mainterm[k])
 			combined = [ t for t in combined if not t in stopwords ]
 			combined = [ t for t in combined if len(t) > 3 ]
-			combined = sorted(combined)
+			combined += [ t.replace('\N{REGISTERED SIGN}','').strip() for t in combined ]
+
 
 			shortID = k.split('/')[-1]
+
+			combined += customAdditions[shortID]
+			combined = [ t for t in combined if not t in customDeletions[shortID] ]
+
+			combined = [ t.lower() for t in combined ]
+
+			combined = sorted(list(set(combined)))
 
 			if len(combined) > 0:
 				data = [shortID,mainterm[k],"|".join(combined)]
