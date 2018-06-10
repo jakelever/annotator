@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
 	with codecs.open(args.geneTerms,'r','utf-8') as inGenes, codecs.open(args.outFile,'w','utf-8') as outDrugs:
 		for line in inGenes:
-			geneid,singlegeneterm,allgeneterms = line.strip().split('\t')
+			geneid,singlegeneterm,allgeneterms,entrez_gene_id = line.strip().split('\t')
 			allgeneterms = allgeneterms.split('|')
 
 			drugid = "inhibitor|%s" % geneid

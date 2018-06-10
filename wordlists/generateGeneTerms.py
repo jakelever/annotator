@@ -89,6 +89,7 @@ if __name__ == '__main__':
 
 			# Get the relevant fields for the gene
 			taxonomy_id = split[0]
+			entrez_gene_id = split[1]
 			type_of_gene = split[9]
 
 
@@ -147,15 +148,15 @@ if __name__ == '__main__':
 
 					numeric_id = int(hugo_id.replace('HGNC:',''))
 
-					gene = (numeric_id,hugo_id,symbol,noDuplicates)
+					gene = (numeric_id,hugo_id,symbol,noDuplicates,entrez_gene_id)
 					genes.append(gene)
 
 	genes = sorted(genes)
 
 	with codecs.open(args.outFile,'w','utf8') as outF:
-		for _,hugo_id,singleName,synonyms in genes:
+		for _,hugo_id,singleName,synonyms,entrez_gene_id in genes:
 			# Then output to the file
-			line = u"%s\t%s\t%s" % (hugo_id, singleName, u"|".join(synonyms))
+			line = u"%s\t%s\t%s\t%s" % (hugo_id, singleName, u"|".join(synonyms), entrez_gene_id)
 			outF.write(line + "\n")
 
 	print("Successfully output to %s" % args.outFile)
