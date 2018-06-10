@@ -7,6 +7,8 @@ terms_drugs.wikidata.txt
 terms_drugs.inhibitors.txt
 terms_genes.txt
 terms_phenotype.txt
+terms_proteins.txt
+terms_umls.txt
 gene_info
 doid-non-classified.obo
 gene_info.gz
